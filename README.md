@@ -1,4 +1,4 @@
-# II1302_Ecco6
+# II1302 Ecco6 ![worflow](https://github.com/Lellalu/II1302_Ecco6/actions/workflows/python-app.yml/badge.svg)
 
 ## Getting started
 
