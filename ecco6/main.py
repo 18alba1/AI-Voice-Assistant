@@ -1,13 +1,29 @@
+from typing import Tuple
+
 import streamlit as st
 import util
 from OpenAIClient import OpenAIClient
 from streamlit_mic_recorder import mic_recorder
 
 
-def init_streamlit():
-  st.title("Ecco6")
+def init_streamlit() -> Tuple[st.selectbox, st.selectbox]:
+  st.title("Chatbox")
   if "messages" not in st.session_state:
      st.session_state.messages = []
+
+  with st.sidebar:
+    st.title("Ecco6")
+    st.info("This app allows you to use chat with ChatGPT using audio.")
+
+    openai_chat_model = st.selectbox(
+      "OpenAI chat model",
+      ("gpt-4-turbo", "gpt-3.5-turbo")
+    )
+    openai_tts_voice = st.selectbox(
+      "OpenAI voice options",
+      ("alloy", "echo", "fable", "onyx", "nova", "shimmer")
+    )
+    return openai_chat_model, openai_tts_voice
 
 def display_history_messages(container: st.container):
   with container:
@@ -41,10 +57,14 @@ def display_message(container: st.container, role: str, audio: bytes, content: s
       st.markdown(content)
 
 def main():
-    openai_client = OpenAIClient(st.secrets["OPENAI_API_KEY"])
+    openai_chat_model, openai_tts_voice = init_streamlit()
 
-    init_streamlit()
-    history_container = st.container(height=500)
+    openai_client = OpenAIClient(
+      st.secrets["OPENAI_API_KEY"],
+      chat_model=openai_chat_model,
+      tts_voice=openai_tts_voice) 
+
+    history_container = st.container(height=600)
     audio_container = st.container()
     display_history_messages(history_container)
     audio_data = display_audio_recording(audio_container)
