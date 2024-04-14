@@ -9,6 +9,13 @@ from audiorecorder import audiorecorder
 
 
 def init_streamlit() -> Tuple[st.selectbox, st.selectbox]:
+  """Initialize the Chatbox and the Sidebar of streamlit.
+  
+  Initialize the session state and the sidebar.
+
+  Returns:
+    A tuple cotaining the two selectbox of chat model and tts voice.
+  """
   st.title("Chatbox")
   if "messages" not in st.session_state:
      st.session_state.messages = []
@@ -27,7 +34,13 @@ def init_streamlit() -> Tuple[st.selectbox, st.selectbox]:
     )
     return openai_chat_model, openai_tts_voice
 
+
 def display_history_messages(container: st.container):
+  """Display all history chatting messages in the Chatbox.
+  
+  Args:
+    container: The container to display the history messages.
+  """
   with container:
     for message in st.session_state.messages:
       with st.chat_message(message["role"]):
@@ -35,11 +48,26 @@ def display_history_messages(container: st.container):
         st.audio(message["audio"])
 
 def display_audio_recording(container: st.container) -> audiorecorder:
+  """Display audio recoriding in the Chatbox.
+  
+  Args:
+    container: The container to display the audio recording
+  Returns:
+    The recorded audiorecorder.
+  """
   with container:
     audio = audiorecorder("Click to record", "Click to stop recording")
     return audio
     
 def append_message(role: str, content: str, audio: bytes):
+  """Append a message to the session state.
+  
+  Args:
+    role: The role of the message, can be user or assistant.
+    content: The content of the message.
+    audio: Bytes of the audio recoriding, which is corresponds to the
+      content.
+  """
   st.session_state.messages.append({
       "role": role,
       "content": content,
@@ -47,6 +75,15 @@ def append_message(role: str, content: str, audio: bytes):
   })
 
 def display_message(container: st.container, role: str, audio: bytes, content: str):
+  """Display a single message.
+  
+  Args:
+    container: The container to display the message.
+    role: The role of the message, can be user or assistant.
+    audio: Bytes of the audio recoriding, which is corresponds to the
+      content.
+    content: The content of the message.
+  """
   with container:
     with st.chat_message(role):
       st.audio(audio)
