@@ -4,16 +4,16 @@ from openai import OpenAI
 
 class OpenAIClient:
 
+
   def __init__(
       self, openai_api_key: str, chat_model: str="gpt-3.5-turbo",
-      stt_model: str = "whisper-1", tts_model: str = "tts-1", 
-      tts_voice: str =  "nova"):
+      stt_model: str="whisper-1", tts_model: str="tts-1", 
+      tts_voice: str="nova"):
     self.client = OpenAI(api_key=openai_api_key)
     self.chat_model = chat_model
     self.stt_model = stt_model
     self.tts_model = tts_model
     self.tts_voice = tts_voice
-
 
   def speech_to_text(self, file: TextIO) -> str:
     transcription = self.client.audio.transcriptions.create(
