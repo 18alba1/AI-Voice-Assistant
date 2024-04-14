@@ -1,5 +1,6 @@
 from ecco6 import util
 
+
 def test_create_memory_file():
   content = b'hello world'
   filename = "foo"
