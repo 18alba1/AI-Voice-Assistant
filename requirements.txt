@@ -1,4 +1,5 @@
 streamlit
+openai
 langchain
 streamlit-mic-recorder
 pytest
