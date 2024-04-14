@@ -5,6 +5,7 @@ import util
 from OpenAIClient import OpenAIClient
 from streamlit_mic_recorder import mic_recorder
 from st_audiorec import st_audiorec
+from audiorecorder import audiorecorder
 
 
 def init_streamlit() -> Tuple[st.selectbox, st.selectbox]:
@@ -33,10 +34,10 @@ def display_history_messages(container: st.container):
         st.markdown(message["content"])
         st.audio(message["audio"])
 
-def display_audio_recording(container: st.container) -> st_audiorec:
+def display_audio_recording(container: st.container) -> audiorecorder:
   with container:
-    wav_audio_data = st_audiorec()
-    return wav_audio_data
+    audio = audiorecorder("Click to record", "Click to stop recording")
+    return audio
     
 def append_message(role: str, content: str, audio: bytes):
   st.session_state.messages.append({
@@ -62,9 +63,10 @@ def main():
     history_container = st.container(height=500)
     audio_container = st.container()
     display_history_messages(history_container)
-    audio_data = display_audio_recording(audio_container)
+    audio = display_audio_recording(audio_container)
 
-    if audio_data:
+    if audio:
+      audio_data = audio.export().read()
       buffer = util.create_memory_file(audio_data, "foo.mp3")
       transcription = openai_client.speech_to_text(buffer)
       append_message("user", transcription, audio_data)
