@@ -1,6 +1,7 @@
-from typing import TextIO, Mapping, Sequence
+from typing import Mapping, Sequence, TextIO
 
 from openai import OpenAI
+
 
 class OpenAIClient:
 

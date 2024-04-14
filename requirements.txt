@@ -2,3 +2,4 @@ streamlit
 langchain
 streamlit-mic-recorder
 pytest
+isort

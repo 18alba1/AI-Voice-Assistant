@@ -1,7 +1,7 @@
 import io
-from OpenAIClient import OpenAIClient
 
 import streamlit as st
+from OpenAIClient import OpenAIClient
 from streamlit_mic_recorder import mic_recorder
 
 st.title("Ecco6")
