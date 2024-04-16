@@ -11,4 +11,9 @@ source venv/bin/activate
 To install the dependencies: 
 ```
 pip3 install -r requirements.txt
-```# II1302_Ecco6
+```
+
+To run the project:
+```
+streamlit run ecco6/main.py
+```

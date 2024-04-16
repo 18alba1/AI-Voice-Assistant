@@ -6,6 +6,7 @@ from OpenAIClient import OpenAIClient
 from streamlit_mic_recorder import mic_recorder
 from st_audiorec import st_audiorec
 from audiorecorder import audiorecorder
+from streamlit_oauth import OAuth2Component
 
 
 def init_streamlit() -> Tuple[st.selectbox, st.selectbox]:
@@ -17,12 +18,13 @@ def init_streamlit() -> Tuple[st.selectbox, st.selectbox]:
     A tuple cotaining the two selectbox of chat model and tts voice.
   """
   st.title("Chatbox")
+
   if "messages" not in st.session_state:
      st.session_state.messages = []
 
   with st.sidebar:
-    st.title("Ecco6")
-    st.info("This app allows you to use chat with ChatGPT using audio.")
+    st.markdown("<h1 style='text-align: center;'>Ecco6</h1>", unsafe_allow_html=True)
+    st.info("This app allows you to use ChatGPT by audio commands and connect to more services.")
 
     openai_chat_model = st.selectbox(
       "OpenAI chat model",
@@ -32,6 +34,25 @@ def init_streamlit() -> Tuple[st.selectbox, st.selectbox]:
       "OpenAI voice options",
       ("alloy", "echo", "fable", "onyx", "nova", "shimmer")
     )
+  
+    st.write("Services to Google:")
+    authorization_url = st.secrets["AUTHORIZATION_URL"]
+    token_url = st.secrets["TOKEN_URL"]
+    revoke_url = st.secrets["REDIRECT_URI"][0]
+    client_id = st.secrets["CLIENT_ID"]
+    client_secret = st.secrets["CLIENT_SECRET"]
+    redirect_uri = st.secrets["REDIRECT_URI"][0]
+    scopes = "https://www.googleapis.com/auth/calendar"
+    oauth2 = OAuth2Component(client_id, client_secret, authorization_url, token_url, token_url, revoke_url)
+    if 'google_token' not in st.session_state:
+      result = oauth2.authorize_button("Continue with Google", redirect_uri, scopes, icon="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 48 48'%3E%3Cdefs%3E%3Cpath id='a' d='M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z'/%3E%3C/defs%3E%3CclipPath id='b'%3E%3Cuse xlink:href='%23a' overflow='visible'/%3E%3C/clipPath%3E%3Cpath clip-path='url(%23b)' fill='%23FBBC05' d='M0 37V11l17 13z'/%3E%3Cpath clip-path='url(%23b)' fill='%23EA4335' d='M0 11l17 13 7-6.1L48 14V0H0z'/%3E%3Cpath clip-path='url(%23b)' fill='%2334A853' d='M0 37l30-23 7.9 1L48 0v48H0z'/%3E%3Cpath clip-path='url(%23b)' fill='%234285F4' d='M48 48L17 24l-4-3 35-10z'/%3E%3C/svg%3E")
+      if result:
+        st.session_state.google_token = result.get('token')
+        st.rerun()
+    else:
+      st.write("Connected to Google calendar!")
+    st.write("Services to Spotify:")
+    st.button("Connect", key="spotify_button")
     return openai_chat_model, openai_tts_voice
 
 

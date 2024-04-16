@@ -1,6 +1,14 @@
+import logging
 from typing import BinaryIO, Mapping, Sequence
 
 from openai import OpenAI
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s.%(msecs)03d %(levelname)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+)
 
 
 class OpenAIClient:
@@ -17,6 +25,7 @@ class OpenAIClient:
     self.stt_model = stt_model
     self.tts_model = tts_model
     self.tts_voice = tts_voice
+    logging.info("OpenAIClient initialized")
 
   def speech_to_text(self, file: BinaryIO) -> str:
     """Transfer speech recording to text.
@@ -30,9 +39,9 @@ class OpenAIClient:
         model=self.stt_model,
         file=file,
     )
+    logging.debug(f"Transcribed {file.name} to {transcription.text}")
     return transcription.text
 
-#This function is to transfer text generated from GPT to speech
   def text_to_speech(self, text: str) -> bytes:
     """Transfer generated text to audio response.
   
@@ -46,6 +55,7 @@ class OpenAIClient:
         voice=self.tts_voice,
         input=text,
     )
+    logging.debug(f"Converted {text} to audio")
     return response.read()
 
   def chat_completion(self, messages: Sequence[Mapping[str, str]]) -> str:
@@ -60,4 +70,5 @@ class OpenAIClient:
       model=self.chat_model,
       messages=messages,
     )
+    logging.debug(f"Send {len(messages)} messages to {self.chat_model}. Received {response.choices[0].message.content}")
     return response.choices[0].message.content

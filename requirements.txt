@@ -4,5 +4,7 @@ langchain
 streamlit-mic-recorder
 streamlit-audiorec
 streamlit-audiorecorder
+google-auth
+streamlit-oauth
 pytest
 isort
