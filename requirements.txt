@@ -1,10 +1,9 @@
-streamlit
+./streamlit-1.32.2-py2.py3-none-any.whl
 openai
 langchain
-streamlit-mic-recorder
-streamlit-audiorec
 streamlit-audiorecorder
 google-auth
 streamlit-oauth
 pytest
 isort
+streamlit-authenticator
