@@ -10,7 +10,6 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S',
 )
 
-
 class OpenAIClient:
   """The OpenAI client.
   
