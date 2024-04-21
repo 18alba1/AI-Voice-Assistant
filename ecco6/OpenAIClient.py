@@ -3,7 +3,6 @@ from typing import BinaryIO, Mapping, Sequence
 
 from openai import OpenAI
 
-
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s.%(msecs)03d %(levelname)s: %(message)s',

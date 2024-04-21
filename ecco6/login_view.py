@@ -1,13 +1,13 @@
+import logging
 from typing import Tuple
 
+import firebase_auth_functions
 import streamlit as st
 import util
-from OpenAIClient import OpenAIClient
 from audiorecorder import audiorecorder
-import firebase_auth_functions
-from streamlit_oauth import OAuth2Component
-import logging
+from OpenAIClient import OpenAIClient
 from PIL import Image
+from streamlit_oauth import OAuth2Component
 
 logging.basicConfig(
     level=logging.INFO,

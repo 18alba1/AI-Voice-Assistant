@@ -1,13 +1,14 @@
+import logging
 from typing import Tuple
 
+import firebase_auth_functions
 import streamlit as st
 import util
-from OpenAIClient import OpenAIClient
 from audiorecorder import audiorecorder
-import firebase_auth_functions
-from streamlit_oauth import OAuth2Component
-import logging
+from OpenAIClient import OpenAIClient
 from PIL import Image
+from streamlit_oauth import OAuth2Component
+
 
 def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
   """Initialize the Chatbox and the Sidebar of streamlit.
@@ -35,7 +36,7 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
           }
       </style>""", unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3)
-
+    #set three colums on the page, markdown on the 2nd col to ensure center positioning.
     with col1:
         st.write(' ')
 
@@ -92,7 +93,7 @@ def homepage_view():
   openai_client = OpenAIClient(
     st.secrets["OPENAI_API_KEY"],
     chat_model=openai_chat_model,
-    tts_voice=openai_tts_voice) 
+    tts_voice=openai_tts_voice)
 
   history_container = st.container(height=500)
   audio_container = st.container()

@@ -1,7 +1,8 @@
-import streamlit as st
 import logging
+
 import homepage_view
 import login_view
+import streamlit as st
 
 logging.basicConfig(
     level=logging.INFO,

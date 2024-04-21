@@ -1,9 +1,10 @@
-import io
-from typing import BinaryIO
 import base64
+import io
+import logging
+from typing import BinaryIO
+
 import streamlit as st
 from audiorecorder import audiorecorder
-import logging
 
 logging.basicConfig(
     level=logging.INFO,
