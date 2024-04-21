@@ -4,7 +4,6 @@ import logging
 from typing import BinaryIO
 
 import streamlit as st
-from audiorecorder import audiorecorder
 
 logging.basicConfig(
     level=logging.INFO,
@@ -25,7 +24,7 @@ def display_history_messages(container: st.container):
         st.markdown(message["content"])
         logging.info(f"display {message['content']} from history")
 
-def display_audio_recording(container: st.container) -> audiorecorder:
+def display_audio_recording(container: st.container) -> "audiorecorder":
   """Display audio recoriding in the Chatbox.
   
   Args:
@@ -33,6 +32,7 @@ def display_audio_recording(container: st.container) -> audiorecorder:
   Returns:
     The recorded audiorecorder.
   """
+  from audiorecorder import audiorecorder
   with container:
     audio = audiorecorder("Click to record", "Click to stop recording")
     return audio
