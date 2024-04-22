@@ -1,8 +1,9 @@
 import logging
 
-import homepage_view
-import login_view
 import streamlit as st
+
+from ecco6.views.homepage_view import homepage_view
+from ecco6.views.login_view import login_view
 
 logging.basicConfig(
     level=logging.INFO,
@@ -12,9 +13,9 @@ logging.basicConfig(
 
 def main():
   if 'user_info' not in st.session_state:
-    login_view.login_view()
+    login_view()
   else:
-    homepage_view.homepage_view()
+    homepage_view()
 
 if __name__ == "__main__":
     main()

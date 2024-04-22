@@ -1,13 +1,14 @@
 import logging
 from typing import Tuple
 
-import firebase_auth_functions
 import streamlit as st
-import util
 from audiorecorder import audiorecorder
-from OpenAIClient import OpenAIClient
 from PIL import Image
 from streamlit_oauth import OAuth2Component
+
+from ecco6 import util
+from ecco6.auth import firebase_auth
+from ecco6.client.OpenAIClient import OpenAIClient
 
 logging.basicConfig(
     level=logging.INFO,
@@ -48,21 +49,21 @@ def login_view():
       auth_form.form_submit_button(
         label='Sign In', use_container_width=True, type='primary')):
     with auth_notification, st.spinner('Signing in'):
-      firebase_auth_functions.sign_in(email,password)
+      firebase_auth.sign_in(email,password)
 
   # Create Account
   elif (do_you_have_an_account == 'No' and
         auth_form.form_submit_button(
           label='Create Account', use_container_width=True, type='primary')):
     with auth_notification, st.spinner('Creating account'):
-      firebase_auth_functions.create_account(email,password)
+      firebase_auth.create_account(email,password)
 
   # Password Reset
   elif (do_you_have_an_account == 'I forgot my password' and
         auth_form.form_submit_button(
           label='Send Password Reset Email', use_container_width=True, type='primary')):
     with auth_notification, st.spinner('Sending password reset link'):
-      firebase_auth_functions.reset_password(email)
+      firebase_auth.reset_password(email)
 
   # Authentication success and warning messages
   if 'auth_success' in st.session_state:

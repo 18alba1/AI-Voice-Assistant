@@ -1,13 +1,15 @@
 import logging
 from typing import Tuple
 
-import firebase_auth_functions
 import streamlit as st
-import util
 from audiorecorder import audiorecorder
-from OpenAIClient import OpenAIClient
 from PIL import Image
 from streamlit_oauth import OAuth2Component
+
+from ecco6 import util
+from ecco6.agent import Ecco6Agent
+from ecco6.auth import firebase_auth
+from ecco6.client.OpenAIClient import OpenAIClient
 
 
 def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
@@ -49,7 +51,7 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
         st.write(' ')
 
     st.info("This app is a voice AI assistant, which is able to connect to multiple services.")
-    st.button(label='Sign Out', on_click=firebase_auth_functions.sign_out, type='primary')
+    st.button(label='Sign Out', on_click=firebase_auth.sign_out, type='primary')
 
     settings_expander = st.expander(label='Settings')
     with settings_expander:
@@ -94,6 +96,9 @@ def homepage_view():
     st.secrets["OPENAI_API_KEY"],
     chat_model=openai_chat_model,
     tts_voice=openai_tts_voice)
+  
+  ecco6_agent = Ecco6Agent(
+     st.secrets["OPENAI_API_KEY"], chat_model=openai_chat_model)
 
   history_container = st.container(height=500)
   audio_container = st.container()
@@ -107,7 +112,7 @@ def homepage_view():
     util.append_message("user", transcription, audio_data)
     util.display_message(history_container, "user", audio_data, transcription)
 
-    answer = openai_client.chat_completion([
+    answer = ecco6_agent.chat_completion([
         {"role": m["role"], "content": m["content"]}
         for m in st.session_state.messages
     ])

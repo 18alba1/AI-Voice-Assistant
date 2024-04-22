@@ -1,6 +1,8 @@
 ./streamlit-1.32.2-py2.py3-none-any.whl
 openai
 langchain
+langchain_openai
+langchainhub
 streamlit-audiorecorder
 google-auth
 streamlit-oauth
