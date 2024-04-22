@@ -71,7 +71,7 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
       client_id = st.secrets["CLIENT_ID"]
       client_secret = st.secrets["CLIENT_SECRET"]
       redirect_uri = st.secrets["REDIRECT_URI"][0]
-      scopes = "https://www.googleapis.com/auth/calendar"
+      scopes = "https://www.googleapis.com/auth/calendar https://mail.google.com/"
       oauth2 = OAuth2Component(
         client_id, client_secret, authorization_url, token_url, token_url, revoke_url)
       if 'google_token' not in st.session_state:
