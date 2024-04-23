@@ -12,7 +12,7 @@ logging.basicConfig(
 )
 
 def main():
-  if 'user_info' not in st.session_state:
+  if 'user_info' not in st.session_state and 'google_auth_code' not in st.session_state:
     login_view()
   else:
     homepage_view()
