@@ -10,6 +10,7 @@ from ecco6 import util
 from ecco6.auth import firebase_auth
 from ecco6.client.OpenAIClient import OpenAIClient
 
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s.%(msecs)03d %(levelname)s: %(message)s',
@@ -19,6 +20,15 @@ logging.basicConfig(
 def login_view():
   st.markdown("<h1 style='text-align: center; color: #03045e '>Ecco6</h1>", unsafe_allow_html=True)
   _, col2, _ = st.columns([1,2,1])
+
+  # Add a divider
+  st.markdown("---")
+  
+  # Add a button
+  if st.button("Sign-in with Google"):
+      firebase_auth.redirect_and_call_function()
+
+  # Create a button that redirects to the Google authorization URL when clicked
 
   customized_button = st.markdown("""
     <style >
@@ -72,3 +82,15 @@ def login_view():
   elif 'auth_warning' in st.session_state:
     auth_notification.warning(st.session_state.auth_warning)
     del st.session_state.auth_warning
+
+    
+  if 'email' not in st.session_state:
+      st.session_state.email = None
+
+  if not st.session_state.email:
+      # User is not authenticated, attempt to log in
+      email = firebase_auth.get_logged_in_user_email()
+      if email:
+          st.session_state.email = email
+          st.experimental_rerun()
+

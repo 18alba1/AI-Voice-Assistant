@@ -1,7 +1,13 @@
 import json
-
+import logging
+import os
 import requests
 import streamlit as st
+import firebase_admin
+from firebase_admin import auth, exceptions, credentials, initialize_app
+import asyncio
+from httpx_oauth.clients.google import GoogleOAuth2
+import webbrowser
 
 ## -------------------------------------------------------------------------------------------------
 ## Firebase Auth API -------------------------------------------------------------------------------
@@ -64,6 +70,26 @@ def raise_detailed_error(request_object):
 ## -------------------------------------------------------------------------------------------------
 ## Authentication functions ------------------------------------------------------------------------
 ## -------------------------------------------------------------------------------------------------
+
+# Initialize Firebase app
+current_dir = os.path.dirname(__file__)
+service_account_key_path = os.path.join(current_dir, "../firebase_credentials.json")
+cred = credentials.Certificate(service_account_key_path)
+try:
+    logging.info("Initializing Firebase app...")  
+    firebase_admin.get_app()
+    logging.info("Firebase app initialized successfully.")  
+except ValueError as e:
+    logging.error("Error initializing Firebase app: %s", e)  
+    initialize_app(cred)
+
+# Initialize Google OAuth2 client
+client_id = st.secrets["GOOGLE_AUTH"]["CLIENT_ID"] 
+client_secret = st.secrets["GOOGLE_AUTH"]["CLIENT_SECRET"]
+redirect_url = "http://localhost:8501"  # Your redirect URL
+
+client = GoogleOAuth2(client_id=client_id, client_secret=client_secret)
+
 
 def sign_in(email:str, password:str) -> None:
     try:
@@ -155,3 +181,66 @@ def delete_account(password:str) -> None:
 
     except Exception as error:
         print(error)
+
+
+async def get_access_token(client: GoogleOAuth2, redirect_url: str, code: str):
+    logging.info("Getting access token...")  
+    return await client.get_access_token(code, redirect_url)
+
+async def get_email(client: GoogleOAuth2, token: str):
+    logging.info("Getting user email...")  
+    user_id, user_email = await client.get_id_email(token)
+    return user_id, user_email
+
+def get_logged_in_user_email():
+    try:
+        code = st.query_params.get('code')  # Remove the parentheses
+        if code:
+            print("Received authorization code:", code)
+            token = asyncio.run(get_access_token(client, redirect_url, code))
+            print("Received access token:", token)
+            st.session_state.google_auth_code = code  # Set google_auth_code in session state
+            st.query_params.clear()
+
+            if token:
+                user_id, user_email = asyncio.run(get_email(client, token['access_token']))
+                print("Received user email:", user_email)
+                if user_email:
+                    try:
+                        user = auth.get_user_by_email(user_email)
+                    except exceptions.FirebaseError:
+                        user = auth.create_user(email=user_email)
+                    st.session_state.email = user.email
+                    st.session_state.user_info = {"user_id": user.uid, "user_email": user.email}  # Set user_info in session state
+                    return user.email
+        return None
+    except Exception as e:
+        print("Error in get_logged_in_user_email:", e)
+        pass
+
+
+def show_login_button():
+    authorization_url = asyncio.run(client.get_authorization_url(
+        redirect_url,
+        scope=["email", "profile"],
+        extras_params={"access_type": "offline"},
+    ))
+    st.markdown(f'<a href="{authorization_url}" target="_self">Login</a>', unsafe_allow_html=True)
+    get_logged_in_user_email()
+
+
+# Define your authorization URL
+authorization_url = asyncio.run(client.get_authorization_url(
+    redirect_url,
+    scope=["email", "profile"],
+    extras_params={"access_type": "offline"},
+))
+
+def redirect_and_call_function():
+    # Redirect to the predefined URL
+    webbrowser.open(authorization_url)
+    # Call another function
+    get_logged_in_user_email()
+
+
+
