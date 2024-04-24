@@ -237,9 +237,7 @@ authorization_url = asyncio.run(client.get_authorization_url(
 ))
 
 def redirect_and_call_function():
-    # Redirect to the predefined URL
     webbrowser.open(authorization_url)
-    # Call another function
     get_logged_in_user_email()
 
 
