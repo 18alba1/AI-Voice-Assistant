@@ -37,7 +37,7 @@ class Ecco6Agent:
     get_current_time_tool = StructuredTool.from_function(
         func=time.get_current_time,
         name="get_current_time",
-        description="Get the current date and time."
+        description="Get the current date, time and the week day name."
     )
     tools.append(get_current_time_tool)
     return tools
