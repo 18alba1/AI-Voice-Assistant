@@ -37,11 +37,29 @@ class Ecco6Agent:
     get_current_time_tool = StructuredTool.from_function(
         func=time.get_current_time,
         name="get_current_time",
-        description="Get the current date and time."
+        description="Get the current date, time and the week day name."
     )
     tools.append(get_current_time_tool)
-    return tools
+    
+    add_event_tool = StructuredTool.from_function(
+        func=functools.partial(
+        google_calendar.add_event, google_credentials=self.google_credentials),
+        name="add_event",
+        description="Add an event to the calendar.",
+        args_schema=google_calendar.AddEventInput,
+    )
+    tools.append(add_event_tool)
 
+    remove_event_tool = StructuredTool.from_function(
+        func=functools.partial(
+            google_calendar.remove_event, google_credentials=self.google_credentials),
+        name="remove_event",
+        description="Remove an event from the calendar.",
+        args_schema=google_calendar.RemoveEventInput,
+    )
+    tools.append(remove_event_tool)
+    return tools
+  
   def chat_completion(self, messages: Sequence[Mapping[str, str]]) -> str:
     chat_history = []
     for message in messages[:-1]:
