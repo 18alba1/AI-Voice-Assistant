@@ -49,6 +49,15 @@ class Ecco6Agent:
         args_schema=google_calendar.AddEventInput,
     )
     tools.append(add_event_tool)
+
+    remove_event_tool = StructuredTool.from_function(
+        func=functools.partial(
+            google_calendar.remove_event, google_credentials=self.google_credentials),
+        name="remove_event",
+        description="Remove an event from the calendar.",
+        args_schema=google_calendar.RemoveEventInput,
+    )
+    tools.append(remove_event_tool)
     return tools
   
   def chat_completion(self, messages: Sequence[Mapping[str, str]]) -> str:
