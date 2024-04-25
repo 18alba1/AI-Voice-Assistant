@@ -1,10 +1,12 @@
+import base64
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 from googleapiclient.discovery import build
 from langchain.pydantic_v1 import BaseModel, Field
 from langchain.tools import StructuredTool
 from tzlocal import get_localzone
-from typing import Optional
+from typing import Optional, Any
+from googleapiclient.errors import HttpError
 
 class GetEventsByDateInput(BaseModel):
     date: str = Field(description="The date in YYYY-MM-DD format.")
@@ -122,3 +124,29 @@ def remove_event(event_title: str, date: str, google_credentials) -> str:
             return f"An error occurred while deleting event '{event_title}': {str(e)}"
     else:
         return f"No event with title '{event_title}' found for the specified date"
+    
+class GetUnreadMessagesInput(BaseModel):
+    pass 
+
+def get_unread_messages(google_credentials) -> str:
+    creds = google_credentials
+    service = build('gmail', 'v1', credentials=creds)
+
+    query = 'in:inbox is:unread -category:(promotions OR social)'
+    unread_msgs = service.users().messages().list(userId='me', q=query).execute()
+
+    messages = unread_msgs.get('messages', [])
+    if not messages:
+        return "You have no unread messages in your primary inbox."
+
+    unread_info = ""
+    for msg in messages:
+        msg_info = service.users().messages().get(userId='me', id=msg['id']).execute()
+        headers = msg_info['payload']['headers']
+        sender = next((header['value'] for header in headers if header['name'] == 'From'), 'Unknown')
+        subject = next((header['value'] for header in headers if header['name'] == 'Subject'), 'No Subject')
+        snippet = msg_info['snippet']
+        unread_info += f"From: {sender}\nSubject: {subject}\nSnippet: {snippet}\n\n"
+
+    return unread_info
+

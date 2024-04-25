@@ -58,6 +58,14 @@ class Ecco6Agent:
         args_schema=google_calendar.RemoveEventInput,
     )
     tools.append(remove_event_tool)
+
+    get_unread_messages_tool = StructuredTool.from_function(
+          func=functools.partial(google_calendar.get_unread_messages, google_credentials=self.google_credentials),
+          name="get_unread_messages",
+          description="Retrieve unread messages from Gmail.",
+          args_schema=google_calendar.GetUnreadMessagesInput,
+    )
+    tools.append(get_unread_messages_tool)
     return tools
   
   def chat_completion(self, messages: Sequence[Mapping[str, str]]) -> str:
