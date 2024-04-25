@@ -5,8 +5,11 @@ from googleapiclient.discovery import build
 from langchain.pydantic_v1 import BaseModel, Field
 from langchain.tools import StructuredTool
 from tzlocal import get_localzone
-from typing import Optional, Any
-from googleapiclient.errors import HttpError
+from email.message import EmailMessage
+from typing import Dict
+import re
+
+#================== CALENDAR ==================================
 
 class GetEventsByDateInput(BaseModel):
     date: str = Field(description="The date in YYYY-MM-DD format.")
@@ -128,6 +131,8 @@ def remove_event(event_title: str, date: str, google_credentials) -> str:
 class GetUnreadMessagesInput(BaseModel):
     pass 
 
+#======================= GMAIL =======================
+
 def get_unread_messages(google_credentials) -> str:
     creds = google_credentials
     service = build('gmail', 'v1', credentials=creds)
@@ -150,3 +155,34 @@ def get_unread_messages(google_credentials) -> str:
 
     return unread_info
 
+class SendEmailInput(BaseModel):
+    recipient: str = Field(description="The email address of the recipient.")
+    subject: str = Field(description="The subject of the email.")
+    body: str = Field(description="The body of the email.")
+
+def preprocess_recipient(recipient: str) -> str:
+    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+
+    matches = re.findall(email_pattern, recipient)
+
+    for match in matches:
+        recipient = recipient.replace(match, match.replace(" at ", "@").replace(" dot ", "."))
+
+    return recipient
+
+def send_email(recipient: str, subject: str, body: str, google_credentials) -> str:
+    recipient = preprocess_recipient(recipient)
+
+    email_msg = EmailMessage()
+    email_msg['To'] = recipient
+    email_msg['Subject'] = subject
+    email_msg.set_content(body)
+
+    try:
+        service = build('gmail', 'v1', credentials=google_credentials)
+        message = {'raw': base64.urlsafe_b64encode(email_msg.as_bytes()).decode()}
+        sent_message = service.users().messages().send(userId='me', body=message).execute()
+
+        return "Email sent successfully!"
+    except Exception as e:
+        return f"An error occurred while sending the email: {str(e)}"

@@ -66,6 +66,14 @@ class Ecco6Agent:
           args_schema=google_calendar.GetUnreadMessagesInput,
     )
     tools.append(get_unread_messages_tool)
+    
+    send_email_tool = StructuredTool.from_function(
+        func=functools.partial(google_calendar.send_email, google_credentials=self.google_credentials),
+        name="send_email",
+        description="Send an email via Gmail.",
+        args_schema=google_calendar.SendEmailInput,
+    )
+    tools.append(send_email_tool)
     return tools
   
   def chat_completion(self, messages: Sequence[Mapping[str, str]]) -> str:
