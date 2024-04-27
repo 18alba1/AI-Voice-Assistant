@@ -2,10 +2,4 @@ venv/
 .streamlit/secrets.toml
 __pycache__/
 *.egg-info
-credentials.json
-token.json
-<<<<<<< HEAD
 *.json
-=======
-firebase_credentials.json
->>>>>>> 90f21622f64a7ae0f7a58ba7f3c02853f2984370
