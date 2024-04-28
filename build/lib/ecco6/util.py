@@ -65,16 +65,9 @@ def display_message(container: st.container, role: str, audio: bytes, content: s
   with container:
     with st.chat_message(role):
       if role == "assistant":
-          audio_base64 = base64.b64encode(audio).decode()
-          html_string = f"""
-              <audio controls autoplay>
-                <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
-              </audio>
-          """
-          sound = st.empty()
-          sound.markdown(html_string, unsafe_allow_html=True)
+        st.audio(audio, autoplay=True)
       else:
-          st.audio(audio)
+        st.audio(audio)
       st.markdown(content)
 
 def create_memory_file(content: bytes, filename: str) -> BinaryIO:

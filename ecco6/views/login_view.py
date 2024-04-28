@@ -2,12 +2,12 @@ import logging
 from typing import Tuple
 
 import streamlit as st
-from audiorecorder import audiorecorder
 from PIL import Image
 from streamlit_oauth import OAuth2Component
 
-from auth import firebase_auth
-from client.OpenAIClient import OpenAIClient
+from ecco6 import util
+from ecco6.auth import firebase_auth
+from ecco6.client.OpenAIClient import OpenAIClient
 
 
 logging.basicConfig(

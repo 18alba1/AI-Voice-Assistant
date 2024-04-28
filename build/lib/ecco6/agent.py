@@ -3,25 +3,15 @@ from typing import Mapping, Sequence
 
 import streamlit as st
 
+from langchain import hub
 from langchain.agents import AgentExecutor, create_tool_calling_agent
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.tools import StructuredTool
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 
-from ecco6.tool import google_calendar
-from ecco6.tool import time
-from ecco6.tool import location
-
-
-SYS_PROMPT = """\
-You are a voice assistant named Ecco6. Your task is to handle questions and
-request from users. You have access to various tools and you must call them
-if they helps you handle the request from the user. You will also have access
-to their calendar and gmail as function calling if possible. Do not make up
-answer or the question and request that you do not know or if the tools does
-not provide information to answer that question.
-"""
+from tool import google_calendar
+from tool import time
+from tool import location
 
 
 class Ecco6Agent:
@@ -29,25 +19,11 @@ class Ecco6Agent:
       self, openai_api_key: str, google_credentials, chat_model: str = "gpt-4-turbo"):
     self.google_credentials = google_credentials
     llm = ChatOpenAI(model=chat_model, api_key=openai_api_key)
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", SYS_PROMPT),
-        MessagesPlaceholder(variable_name="chat_history", optional=True),
-        ("user", "{input}"),
-        MessagesPlaceholder(variable_name="agent_scratchpad"),
-    ])
+    prompt = hub.pull("hwchase17/openai-functions-agent")
     tools = self._create_tools()
-    #tools = self._create_dummy_tools()
     agent = create_tool_calling_agent(llm, tools, prompt)
     self.agent_executor = AgentExecutor(
        agent=agent, tools=tools, verbose=True)
-    
-  def _create_dummy_tools(self):
-    dummy_tool = StructuredTool.from_function(
-        func=lambda x: "Hello world",
-        name="hello_world",
-        description='Returns "Hellow world" as a string.',
-    )
-    return [dummy_tool]
     
   def _create_tools(self):
     tools = []
@@ -56,7 +32,7 @@ class Ecco6Agent:
           func=functools.partial(
             google_calendar.get_events_by_date, google_credentials=self.google_credentials),
           name="get_events_by_date",
-          description="Get all events of a day from Google calendar.",
+          description="Get all events of a day.",
           args_schema=google_calendar.GetEventsByDateInput,
       )
       tools.append(get_events_by_date_tool)
@@ -72,7 +48,7 @@ class Ecco6Agent:
         func=functools.partial(
         google_calendar.add_event, google_credentials=self.google_credentials),
         name="add_event",
-        description="Add an event to the Google calendar.",
+        description="Add an event to the calendar.",
         args_schema=google_calendar.AddEventInput,
     )
     tools.append(add_event_tool)
@@ -81,7 +57,7 @@ class Ecco6Agent:
         func=functools.partial(
             google_calendar.remove_event, google_credentials=self.google_credentials),
         name="remove_event",
-        description="Remove an event from the Google calendar.",
+        description="Remove an event from the calendar.",
         args_schema=google_calendar.RemoveEventInput,
     )
     tools.append(remove_event_tool)
