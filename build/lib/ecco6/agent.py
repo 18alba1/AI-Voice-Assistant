@@ -1,14 +1,17 @@
 import functools
 from typing import Mapping, Sequence
 
+import streamlit as st
+
 from langchain import hub
 from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain.tools import StructuredTool
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 
-from ecco6.tool import google_calendar
-from ecco6.tool import time
+from tool import google_calendar
+from tool import time
+from tool import location
 
 
 class Ecco6Agent:
@@ -74,6 +77,14 @@ class Ecco6Agent:
         args_schema=google_calendar.SendEmailInput,
     )
     tools.append(send_email_tool)
+
+    if "latitude" in st.session_state and "longitude" in st.session_state:
+      get_current_location_tool = StructuredTool.from_function(
+          func=lambda x: location.get_current_location(latitude=st.session_state.latitude, longitude=st.session_state.longitude),
+          name="get_current_location",
+          description="Get my current location.",
+      )
+      tools.append(get_current_location_tool)
     return tools
   
   def chat_completion(self, messages: Sequence[Mapping[str, str]]) -> str:
