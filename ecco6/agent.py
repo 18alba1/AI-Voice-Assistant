@@ -5,6 +5,7 @@ import streamlit as st
 
 from langchain import hub
 from langchain.agents import AgentExecutor, create_tool_calling_agent
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.tools import StructuredTool
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_openai import ChatOpenAI
@@ -14,12 +15,27 @@ from ecco6.tool import time
 from ecco6.tool import location
 
 
+SYS_PROMPT = """\
+You are a voice assistant named Ecco6. Your task is to handle questions and
+request from users. You have access to various tools and you must call them
+if they helps you handle the request from the user. If the use choose to
+login their Google account, you will also have access to their calendar and
+gmail. Do now make up asnwer or the question and request that you do not know
+or if the tools does not provide information to answer that question.
+"""
+
+
 class Ecco6Agent:
   def __init__(
       self, openai_api_key: str, google_credentials, chat_model: str = "gpt-4-turbo"):
     self.google_credentials = google_credentials
     llm = ChatOpenAI(model=chat_model, api_key=openai_api_key)
-    prompt = hub.pull("hwchase17/openai-functions-agent")
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", SYS_PROMPT),
+        MessagesPlaceholder(variable_name="chat_history", optional=True),
+        ("user", "{input}"),
+        MessagesPlaceholder(variable_name="agent_scratchpad"),
+    ])
     tools = self._create_tools()
     #tools = self._create_dummy_tools()
     agent = create_tool_calling_agent(llm, tools, prompt)
