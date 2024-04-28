@@ -1,4 +1,4 @@
-./streamlit-1.32.2-py2.py3-none-any.whl
+streamlit
 openai
 langchain
 langchain_openai
@@ -16,3 +16,4 @@ tzlocal
 firebase_admin
 streamlit_js_eval
 googlemaps
+setuptools
