@@ -14,3 +14,5 @@ google-auth-httplib2
 google-auth-oauthlib
 tzlocal
 firebase_admin
+streamlit_js_eval
+googlemaps

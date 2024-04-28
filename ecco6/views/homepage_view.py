@@ -1,12 +1,11 @@
 import logging
 from typing import Tuple
-import os
 
 import streamlit as st
 from PIL import Image
 from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
+from streamlit_js_eval import get_geolocation
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import webbrowser
@@ -26,6 +25,11 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
     A tuple cotaining the two selectbox of chat model and tts voice.
   """
   st.title("Chatbox")
+
+  location = get_geolocation()
+  if location:
+    st.session_state.latitude = location["coords"]["latitude"]
+    st.session_state.longitude = location["coords"]["longitude"]
 
   if "messages" not in st.session_state:
      st.session_state.messages = []
@@ -99,10 +103,11 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
           st.session_state.google_credentials = creds
       else:
         creds = st.session_state.google_credentials
-        if not creds.valid or (creds.expired and creds.refresh_token):
+        if not creds.valid or (creds.expired and creds.refresh_token): 
           creds.refresh(Request())
           st.session_state.google_credentials = creds
         st.write("Logged into Google!")
+
       st.write("Services to Spotify:")
       st.button("Connect", key="spotify_button")
       return openai_chat_model, openai_tts_voice
