@@ -7,10 +7,10 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from streamlit_js_eval import get_geolocation
 
-from ecco6 import util
-from ecco6.agent import Ecco6Agent
-from ecco6.auth import firebase_auth
-from ecco6.client.OpenAIClient import OpenAIClient
+import util
+from agent import Ecco6Agent
+from auth import firebase_auth
+from client.OpenAIClient import OpenAIClient
 
 
 def init_homepage() -> Tuple[st.selectbox, st.selectbox]:

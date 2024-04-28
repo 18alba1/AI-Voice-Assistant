@@ -21,9 +21,18 @@ class Ecco6Agent:
     llm = ChatOpenAI(model=chat_model, api_key=openai_api_key)
     prompt = hub.pull("hwchase17/openai-functions-agent")
     tools = self._create_tools()
+    #tools = self._create_dummy_tools()
     agent = create_tool_calling_agent(llm, tools, prompt)
     self.agent_executor = AgentExecutor(
        agent=agent, tools=tools, verbose=True)
+    
+  def _create_dummy_tools(self):
+    dummy_tool = StructuredTool.from_function(
+        func=lambda x: "Hello world",
+        name="hello_world",
+        description='Returns "Hellow world" as a string.',
+    )
+    return [dummy_tool]
     
   def _create_tools(self):
     tools = []
