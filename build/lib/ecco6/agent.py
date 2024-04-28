@@ -7,8 +7,8 @@ from langchain.tools import StructuredTool
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 
-from tool import google_calendar
-from tool import time
+from ecco6.tool import google_calendar
+from ecco6.tool import time
 
 
 class Ecco6Agent:

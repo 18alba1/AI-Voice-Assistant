@@ -3,6 +3,7 @@ from typing import Tuple
 import os
 
 import streamlit as st
+from audiorecorder import audiorecorder
 from PIL import Image
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -11,10 +12,10 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import webbrowser
 
-import util
-from agent import Ecco6Agent
-from auth import firebase_auth
-from client.OpenAIClient import OpenAIClient
+from ecco6 import util
+from ecco6.agent import Ecco6Agent
+from ecco6.auth import firebase_auth
+from ecco6.client.OpenAIClient import OpenAIClient
 
 
 def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
