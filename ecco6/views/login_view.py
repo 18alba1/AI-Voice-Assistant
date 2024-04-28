@@ -1,14 +1,8 @@
 import logging
-from typing import Tuple
 
 import streamlit as st
-from PIL import Image
-from streamlit_oauth import OAuth2Component
 
-from ecco6 import util
 from ecco6.auth import firebase_auth
-from ecco6.client.OpenAIClient import OpenAIClient
-
 
 logging.basicConfig(
     level=logging.INFO,

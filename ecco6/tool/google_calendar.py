@@ -1,13 +1,14 @@
 import base64
 import json
+import re
 from datetime import datetime
+from email.message import EmailMessage
+from typing import Dict
+
 from googleapiclient.discovery import build
 from langchain.pydantic_v1 import BaseModel, Field
 from langchain.tools import StructuredTool
 from tzlocal import get_localzone
-from email.message import EmailMessage
-from typing import Dict
-import re
 
 #================== CALENDAR ==================================
 

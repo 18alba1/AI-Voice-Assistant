@@ -2,9 +2,9 @@ import logging
 from typing import Tuple
 
 import streamlit as st
-from PIL import Image
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
+from PIL import Image
 from streamlit_js_eval import get_geolocation
 
 from ecco6 import util

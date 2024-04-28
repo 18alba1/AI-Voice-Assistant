@@ -2,17 +2,13 @@ import functools
 from typing import Mapping, Sequence
 
 import streamlit as st
-
 from langchain.agents import AgentExecutor, create_tool_calling_agent
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.tools import StructuredTool
 from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
 
-from ecco6.tool import google_calendar
-from ecco6.tool import time
-from ecco6.tool import location
-
+from ecco6.tool import google_calendar, location, time
 
 SYS_PROMPT = """\
 You are a voice assistant named Ecco6. Your task is to handle questions and

@@ -1,13 +1,14 @@
+import asyncio
 import json
 import logging
 import os
+import webbrowser
+
+import firebase_admin
 import requests
 import streamlit as st
-import firebase_admin
-from firebase_admin import auth, exceptions, credentials, initialize_app
-import asyncio
+from firebase_admin import auth, credentials, exceptions, initialize_app
 from httpx_oauth.clients.google import GoogleOAuth2
-import webbrowser
 
 ## -------------------------------------------------------------------------------------------------
 ## Firebase Auth API -------------------------------------------------------------------------------
