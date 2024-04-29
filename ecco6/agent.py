@@ -1,5 +1,5 @@
 import functools
-from typing import Mapping, Sequence
+from typing import Mapping, Sequence, Tuple
 
 import streamlit as st
 from langchain.agents import AgentExecutor, create_tool_calling_agent
@@ -8,7 +8,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
 
-from ecco6.tool import google, location, time
+from ecco6.tool import google, location, time, weather
 
 SYS_PROMPT = """\
 You are a voice assistant named Ecco6. Your task is to handle questions and
@@ -139,6 +139,16 @@ class Ecco6Agent:
           description="Get my current location.",
       )
       tools.append(get_current_location_tool)
+    
+    
+    get_weather_tool = StructuredTool.from_function(
+         func=weather.get_weather,
+         name="get_weather",
+         description="Get the current weather forecast for a specified city.",
+         args_schema=weather.GetWeatherInput,
+    )
+    tools.append(get_weather_tool)
+
     return tools
   
   def chat_completion(self, messages: Sequence[Mapping[str, str]]) -> str:
