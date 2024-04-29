@@ -3,8 +3,8 @@ import json
 import re
 from datetime import datetime
 from email.message import EmailMessage
-from typing import Dict
-
+from typing import Dict, List
+from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build
 from langchain.pydantic_v1 import BaseModel, Field
 from langchain.tools import StructuredTool
@@ -187,3 +187,89 @@ def send_email(recipient: str, subject: str, body: str, google_credentials) -> s
         return "Email sent successfully!"
     except Exception as e:
         return f"An error occurred while sending the email: {str(e)}"
+
+# ===================== TASKS ====================================
+
+class ListTaskListsInput(BaseModel):
+    pass
+
+def list_task_lists(google_credentials) -> List[str]:
+    service = build("tasks", "v1", credentials=google_credentials)
+    task_lists = service.tasklists().list(maxResults=10).execute()
+    items = task_lists.get("items", [])
+    return [item["title"] for item in items]
+
+class CreateTaskListInput(BaseModel):
+    name: str = Field(description="The name of the new task list.")
+
+def create_taskList(google_credentials, name: str) -> Dict:
+    try:
+        service = build("tasks", "v1", credentials=google_credentials)
+        
+        new_task_list = service.tasklists().insert(body={"title": name}).execute()
+        
+        return new_task_list
+    except HttpError as err:
+        return {"error": f"HTTP Error: {err}"}
+    except Exception as e:
+        return {"error": f"An error occurred: {e}"}
+
+class ListTasksInListInput(BaseModel):
+    task_list_name: str = Field(description="The name of the task list to list tasks from.")
+
+def list_tasks_in_list(task_list_name: str, google_credentials) -> List[str]:
+    try:
+        service = build("tasks", "v1", credentials=google_credentials)
+        task_lists = service.tasklists().list(maxResults=10).execute()
+        items = task_lists.get("items", [])
+        
+        for item in items:
+            if item["title"].lower() == task_list_name.lower():
+                task_list_id = item["id"]
+                break
+        else:
+            return f"No task list found with the name '{task_list_name}'"
+        
+        tasks = service.tasks().list(tasklist=task_list_id).execute()
+        task_items = tasks.get("items", [])
+        
+        if not task_items:
+            return f"No tasks found in the '{task_list_name}' task list"
+        
+        task_titles = [task["title"] for task in task_items]
+        
+        return task_titles
+    except HttpError as err:
+        return {"error": f"HTTP Error: {err}"}
+    except Exception as e:
+        return {"error": f"An error occurred: {e}"}
+
+class AddTaskInput(BaseModel):
+    task_name: str = Field(description="The name of the task to add.")
+    task_list_name: str = Field(description="The name of the task list to add the task to.")
+
+def add_task(task_name: str, task_list_name: str, google_credentials) -> str:
+    try:
+        service = build("tasks", "v1", credentials=google_credentials)
+        
+        task_lists = service.tasklists().list(maxResults=10).execute()
+        items = task_lists.get("items", [])
+        
+        for item in items:
+            if item["title"].lower() == task_list_name.lower():
+                task_list_id = item["id"]
+                break
+        else:
+            return f"No task list found with the name '{task_list_name}'"
+        
+        task = {
+            'title': task_name,
+        }
+        
+        service.tasks().insert(tasklist=task_list_id, body=task).execute()
+        
+        return f"Task '{task_name}' added successfully to the '{task_list_name}' task list"
+    except HttpError as err:
+        return f"HTTP Error: {err}"
+    except Exception as e:
+        return f"An error occurred: {e}"
