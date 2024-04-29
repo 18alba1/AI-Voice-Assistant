@@ -1,13 +1,13 @@
+import asyncio
 import json
 import logging
-import os
+import webbrowser
+
+import firebase_admin
 import requests
 import streamlit as st
-import firebase_admin
-from firebase_admin import auth, exceptions, credentials, initialize_app
-import asyncio
+from firebase_admin import auth, credentials, exceptions, initialize_app
 from httpx_oauth.clients.google import GoogleOAuth2
-import webbrowser
 
 ## -------------------------------------------------------------------------------------------------
 ## Firebase Auth API -------------------------------------------------------------------------------
@@ -72,9 +72,19 @@ def raise_detailed_error(request_object):
 ## -------------------------------------------------------------------------------------------------
 
 # Initialize Firebase app
-current_dir = os.path.dirname(__file__)
-service_account_key_path = os.path.join(current_dir, "../firebase_credentials.json")
-cred = credentials.Certificate(service_account_key_path)
+firebase_credentials = {
+    "type": st.secrets["FIREBASE"]["TYPE"],
+    "project_id": st.secrets["FIREBASE"]["TYPE"],
+    "private_key_id": st.secrets["FIREBASE"]["PRIVATE_KEY_ID"],
+    "private_key": st.secrets["FIREBASE"]["PRIVATE_KEY"],
+    "client_email": st.secrets["FIREBASE"]["CLIENT_EMAIL"],
+    "client_id": st.secrets["FIREBASE"]["CLIENT_ID"],
+    "auth_uri": st.secrets["FIREBASE"]["AUTH_URI"],
+    "token_uri": st.secrets["FIREBASE"]["TOKEN_URI"],
+    "auth_provider_x509_cert_url": st.secrets["FIREBASE"]["AUTH_PROVIDER_X509_CERT_URL"],
+    "client_x509_cert_url": st.secrets["FIREBASE"]["CLIENT_X509_CERT_URL"],
+}
+cred = credentials.Certificate(firebase_credentials)
 try:
     logging.info("Initializing Firebase app...")  
     firebase_admin.get_app()

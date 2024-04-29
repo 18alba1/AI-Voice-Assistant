@@ -131,6 +131,15 @@ class Ecco6Agent:
         args_schema=google.AddTaskInput,
     )
     tools.append(add_task_tool)
+
+    remove_task_tool = StructuredTool.from_function(
+        func=functools.partial(
+        google.remove_task, google_credentials=self.google_credentials),
+        name="remove_task",
+        description="Remove a task from a specified task list in Google Tasks.",
+        args_schema=google.RemoveTaskInput,
+    )
+    tools.append(remove_task_tool)
     
     if "latitude" in st.session_state and "longitude" in st.session_state:
       get_current_location_tool = StructuredTool.from_function(

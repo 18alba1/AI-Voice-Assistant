@@ -11,7 +11,6 @@ source venv/bin/activate
 To install the dependencies and install the ecco6 package: 
 ```
 pip3 install -r requirements.txt
-pip3 install .
 ```
 
 To run the project:

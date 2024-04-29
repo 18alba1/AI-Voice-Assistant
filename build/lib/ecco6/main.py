@@ -1,7 +1,6 @@
 import logging
 
 import streamlit as st
-
 from views.homepage_view import homepage_view
 from views.login_view import login_view
 

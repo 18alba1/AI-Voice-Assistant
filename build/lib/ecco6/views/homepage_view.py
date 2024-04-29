@@ -2,18 +2,15 @@ import logging
 from typing import Tuple
 
 import streamlit as st
-from PIL import Image
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
+from PIL import Image
 from streamlit_js_eval import get_geolocation
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-import webbrowser
 
-import util
-from agent import Ecco6Agent
-from auth import firebase_auth
-from client.OpenAIClient import OpenAIClient
+from ecco6 import util
+from ecco6.agent import Ecco6Agent
+from ecco6.auth import firebase_auth
+from ecco6.client.OpenAIClient import OpenAIClient
 
 
 def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
@@ -89,7 +86,8 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
       }
       scopes = [
          "https://www.googleapis.com/auth/calendar",
-         "https://mail.google.com/"
+         "https://mail.google.com/",
+         "https://www.googleapis.com/auth/tasks"
       ]
       flow = InstalledAppFlow.from_client_config(
           google_client_config,
