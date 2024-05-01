@@ -4,3 +4,4 @@ __pycache__/
 *.egg-info
 *.json
 .DS_Store
+build/

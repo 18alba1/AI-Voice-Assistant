@@ -70,6 +70,13 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
         ("alloy", "echo", "fable", "onyx", "nova", "shimmer")
       )
 
+    rpi_url_input = st.text_input(
+      "Raspberry Pi alarm server url",
+      "localhost:8080"
+    )
+    if rpi_url_input:
+        st.session_state.rpi_url = rpi_url_input
+
     settings_expander = st.expander(label='Services')
     with settings_expander:
       st.write("Services to Google:")
@@ -121,6 +128,7 @@ def homepage_view():
   ecco6_agent = Ecco6Agent(
      st.secrets["OPENAI_API_KEY"], 
      google_credentials=st.session_state.google_credentials if "google_credentials" in st.session_state else None,
+     rpi_url=st.session_state.rpi_url if "rpi_url" in st.session_state else None, 
      chat_model=openai_chat_model)
 
   history_container = st.container(height=500)

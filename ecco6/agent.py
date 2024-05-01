@@ -8,7 +8,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
 
-from ecco6.tool import google, location, time, weather
+from ecco6.tool import google, location, time, weather, rpi_alarm
 
 SYS_PROMPT = """\
 You are a voice assistant named Ecco6. Your task is to handle questions and
@@ -22,8 +22,9 @@ if the tools does not provide information to answer that question.
 
 class Ecco6Agent:
   def __init__(
-      self, openai_api_key: str, google_credentials, chat_model: str = "gpt-4-turbo"):
+      self, openai_api_key: str, google_credentials, rpi_url, chat_model: str = "gpt-4-turbo"):
     self.google_credentials = google_credentials
+    self.rpi_url = rpi_url
     llm = ChatOpenAI(model=chat_model, api_key=openai_api_key)
     prompt = ChatPromptTemplate.from_messages([
         ("system", SYS_PROMPT),
@@ -158,6 +159,14 @@ class Ecco6Agent:
     )
     tools.append(get_weather_tool)
 
+    if self.rpi_url is not None:
+      set_rpi_alarm_tool = StructuredTool.from_function(
+          func=functools.partial(rpi_alarm.set_rpi_alarm, url=self.rpi_url),
+          name="set_rpi_alarm",
+          description="Set an alarm/countdown by given time.",
+          args_schema=rpi_alarm.SetRpiAlarmInput,
+      )
+      tools.append(set_rpi_alarm_tool)
     return tools
   
   def chat_completion(self, messages: Sequence[Mapping[str, str]]) -> str:
@@ -173,3 +182,4 @@ class Ecco6Agent:
       "input": messages[-1]["content"],
     })
     return result["output"]
+
