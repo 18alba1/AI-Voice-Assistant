@@ -1,5 +1,6 @@
 import logging
 from typing import Tuple
+import speech_recognition as sr
 
 import streamlit as st
 from google.auth.transport.requests import Request
@@ -118,36 +119,71 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
       return openai_chat_model, openai_tts_voice
 
 def homepage_view():
-  openai_chat_model, openai_tts_voice = init_homepage()
+    openai_chat_model, openai_tts_voice = init_homepage()
 
-  openai_client = OpenAIClient(
-    st.secrets["OPENAI_API_KEY"],
-    chat_model=openai_chat_model,
-    tts_voice=openai_tts_voice)
-  
-  ecco6_agent = Ecco6Agent(
-     st.secrets["OPENAI_API_KEY"], 
-     google_credentials=st.session_state.google_credentials if "google_credentials" in st.session_state else None,
-     rpi_url=st.session_state.rpi_url if "rpi_url" in st.session_state else None, 
-     chat_model=openai_chat_model)
+    openai_client = OpenAIClient(
+        st.secrets["OPENAI_API_KEY"],
+        chat_model=openai_chat_model,
+        tts_voice=openai_tts_voice)
+    
+    ecco6_agent = Ecco6Agent(
+        st.secrets["OPENAI_API_KEY"], 
+        google_credentials=st.session_state.google_credentials if "google_credentials" in st.session_state else None,
+        rpi_url=st.session_state.rpi_url if "rpi_url" in st.session_state else None,
+        chat_model=openai_chat_model)
 
-  history_container = st.container(height=500)
-  audio_container = st.container()
-  util.display_history_messages(history_container)
-  audio = util.display_audio_recording(audio_container)
+    history_container = st.container(height=500)
+    audio_container = st.container()
+    util.display_history_messages(history_container)
+    
+    # Continuous interaction loop
+    while True:
+        # Listen for wake word
+        if listen_for_wake_word():
+            print("Start recording...")
+            audio = record_audio_until_silence(audio_container)
+            if audio:
+                # No need to export audio, directly use the AudioData object
+                # audio_data = audio.export().read()
+                buffer = util.create_memory_file(audio.get_wav_data(), "foo.wav")
+                transcription = openai_client.speech_to_text(buffer)
+                util.append_message("user", transcription, audio.get_wav_data())  # Use get_wav_data() to get the raw audio data
+                util.display_message(history_container, "user", audio.get_wav_data(), transcription)
+                answer = ecco6_agent.chat_completion([
+                    {"role": m["role"], "content": m["content"]}
+                    for m in st.session_state.messages
+                ])
+                logging.info(f"trying to play {answer}.")
+                if answer:
+                    audio_response = openai_client.text_to_speech(answer)
+                    util.append_message("assistant", answer, audio_response)  # Pass the audio response
+                    util.display_message(history_container, "assistant", audio_response, answer)  # Pass the audio response
 
-  if audio:
-    audio_data = audio.export().read()
-    buffer = util.create_memory_file(audio_data, "foo.mp3")
-    transcription = openai_client.speech_to_text(buffer)
-    util.append_message("user", transcription, audio_data)
-    util.display_message(history_container, "user", audio_data, transcription)
 
-    answer = ecco6_agent.chat_completion([
-        {"role": m["role"], "content": m["content"]}
-        for m in st.session_state.messages
-    ])
-    answer_audio = openai_client.text_to_speech(answer)
-    util.append_message("assistant", answer, answer_audio)
-    util.display_message(history_container, "assistant", answer_audio, answer)
-    logging.info(f"trying to play {answer}.")
+# Function to listen for the wake word "Hey"
+def listen_for_wake_word():
+    recognizer = sr.Recognizer()
+    microphone = sr.Microphone()
+    with microphone as source:
+        recognizer.adjust_for_ambient_noise(source)
+        print("Listening for wake word 'Hey'...")
+        while True:
+            audio = recognizer.listen(source)
+            try:
+                wake_word = recognizer.recognize_google(audio)
+                if wake_word.lower() == "hey":
+                    print("Wake word 'Hey' detected!")
+                    return True
+            except sr.UnknownValueError:
+                pass
+
+# Function to record audio until silence is detected
+def record_audio_until_silence(container):
+    recognizer = sr.Recognizer()
+    microphone = sr.Microphone()
+    with microphone as source:
+        recognizer.adjust_for_ambient_noise(source)
+        print("Listening...")
+        audio = recognizer.listen(source, timeout=None)
+        print("Stopped listening.")
+        return audio
