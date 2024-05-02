@@ -17,4 +17,6 @@ firebase_admin
 streamlit_js_eval
 googlemaps
 setuptools
+pyaudio
+speechrecognition
 .
