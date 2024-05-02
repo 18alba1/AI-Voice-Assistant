@@ -163,19 +163,23 @@ def homepage_view():
 # Function to listen for the wake word "Hey"
 def listen_for_wake_word():
     recognizer = sr.Recognizer()
-    microphone = sr.Microphone()
+    
+    # Modify this line to explicitly specify the microphone device
+    microphone = sr.Microphone(device_index=0)  # Adjust the device index as needed
+    
     with microphone as source:
         recognizer.adjust_for_ambient_noise(source)
-        print("Listening for wake word 'Hey'...")
+        print("Listening for wake word 'Hello'...")
         while True:
             audio = recognizer.listen(source)
             try:
                 wake_word = recognizer.recognize_google(audio)
-                if wake_word.lower() == "hey":
+                if wake_word.lower() == "hello":
                     print("Wake word 'Hey' detected!")
                     return True
             except sr.UnknownValueError:
                 pass
+
 
 # Function to record audio until silence is detected
 def record_audio_until_silence(container):
