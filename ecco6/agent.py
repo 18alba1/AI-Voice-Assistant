@@ -8,7 +8,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
 
-from ecco6.tool import google, location, time, weather, rpi_alarm
+from ecco6.tool import google, location, time, weather, rpi_alarm, news
 
 SYS_PROMPT = """\
 You are a voice assistant named Ecco6. Your task is to handle questions and
@@ -150,14 +150,21 @@ class Ecco6Agent:
       )
       tools.append(get_current_location_tool)
     
-    
+    get_news_tool = StructuredTool.from_function(
+        func=news.get_top_headlines,
+        name="get_top_headlines",
+        description="Get the top headlines news from various sources."
+    )
+    tools.append(get_news_tool)
+
     get_weather_tool = StructuredTool.from_function(
-         func=weather.get_weather,
-         name="get_weather",
-         description="Get the current weather forecast for a specified city.",
-         args_schema=weather.GetWeatherInput,
+          func=weather.get_weather,
+          name="get_weather",
+          description="Get the current weather forecast for a specified city.",
+          args_schema=weather.GetWeatherInput,
     )
     tools.append(get_weather_tool)
+
 
     if self.rpi_url is not None:
       set_rpi_alarm_tool = StructuredTool.from_function(

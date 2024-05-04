@@ -22,15 +22,23 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
   Returns:
     A tuple cotaining the two selectbox of chat model and tts voice.
   """
-  st.title("Chatbox")
-
-  location = get_geolocation()
-  if location:
-    st.session_state.latitude = location["coords"]["latitude"]
-    st.session_state.longitude = location["coords"]["longitude"]
-
-  if "messages" not in st.session_state:
-     st.session_state.messages = []
+  image = Image.open('./ecco6/Ecco6-Logo-example.png')
+  col1, col2 = st.columns([1, 3])  # Adjust the width ratio as needed
+  with col1:
+      st.image(image, width=150)
+  with col2:
+      st.title("Welcome to ECCO6")
+  st.subheader("Instructions:")
+  st.write("1. Start by connecting your device with the ECCO6 device via Bluetooth.")
+  st.write("2. To get the AI assistant ready for your questions, say the wake word 'Hello' and wait a few seconds.")
+  st.write("   Before each question, say the wake word.")
+  st.write("3. In the sidebar:")
+  st.write("   - 3.1. Connect to your different accounts such as Google and Spotify to access our different services.")
+  st.write("   -  Services include:")
+  st.write("      - 1. Modifying your Google Calendar")
+  st.write("      - 2. Getting your location")
+  st.write("      - 3. Modifying your tasks")
+  st.write("      - 4. Listening to music")
 
   with st.sidebar:
     st.markdown("""
@@ -132,9 +140,9 @@ def homepage_view():
         rpi_url=st.session_state.rpi_url if "rpi_url" in st.session_state else None,
         chat_model=openai_chat_model)
 
-    history_container = st.container(height=500)
-    audio_container = st.container()
-    util.display_history_messages(history_container)
+    #history_container = st.container(height=500)
+    #audio_container = st.container()
+    #util.display_history_messages(history_container)
     
     # Continuous interaction loop
     while True:
