@@ -22,7 +22,7 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
   Returns:
     A tuple cotaining the two selectbox of chat model and tts voice.
   """
-  st.title("Chatbox")
+  #st.title("Chatbox")
 
   location = get_geolocation()
   if location:
@@ -31,6 +31,25 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
 
   if "messages" not in st.session_state:
      st.session_state.messages = []
+
+
+  image = Image.open('./ecco6/ecco6logo.png')
+  col1, col2 = st.columns([1, 3])  # Adjust the width ratio as needed
+  with col1:
+      st.image(image, width=150)
+  with col2:
+      st.title("Welcome to ECCO6")
+  st.subheader("Instructions:")
+  st.write("1. Start by connecting your device with the Ecco6 device via Bluetooth.")
+  st.write("2. Say the wake word 'Hello' to get the Ecco6 ready for your questions.")
+  st.write("   Before each question, say the wake word 'Hello'.")
+  st.write("3. In the sidebar:")
+  st.write("   - 3.1. Connect to your different accounts such as Google and Spotify to access our different services.")
+  st.write("   -  Services include:")
+  st.write("      - 1. Modifying your Google Calendar")
+  st.write("      - 2. Getting your location")
+  st.write("      - 3. Modifying your tasks")
+  st.write("      - 4. Listening to music")
 
   with st.sidebar:
     st.markdown("""
@@ -51,8 +70,8 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
 
     with col2:
         st.markdown("<h1 style='text-align: center;color: #03045e'>Ecco6</h1>", unsafe_allow_html=True)
-        image = Image.open('./ecco6/Ecco6-Logo-example.png')
-        st.image(image, width=90)
+        #image = Image.open('./ecco6/ecco6logo.png')
+        #st.image(image, width=90)
 
     with col3:
         st.write(' ')
@@ -118,7 +137,9 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
       st.button("Connect", key="spotify_button")
       return openai_chat_model, openai_tts_voice
 
+
 def homepage_view():
+    st.empty()
     openai_chat_model, openai_tts_voice = init_homepage()
 
     openai_client = OpenAIClient(
@@ -131,33 +152,30 @@ def homepage_view():
         google_credentials=st.session_state.google_credentials if "google_credentials" in st.session_state else None,
         rpi_url=st.session_state.rpi_url if "rpi_url" in st.session_state else None,
         chat_model=openai_chat_model)
-
-    history_container = st.container(height=500)
-    audio_container = st.container()
-    util.display_history_messages(history_container)
     
     # Continuous interaction loop
     while True:
         # Listen for wake word
         if listen_for_wake_word():
             print("Start recording...")
-            audio = record_audio_until_silence(audio_container)
+            audio = record_audio_until_silence()
             if audio:
                 # No need to export audio, directly use the AudioData object
                 # audio_data = audio.export().read()
                 buffer = util.create_memory_file(audio.get_wav_data(), "foo.wav")
                 transcription = openai_client.speech_to_text(buffer)
+                logging.info(f"User said: {transcription}.")
                 util.append_message("user", transcription, audio.get_wav_data())  # Use get_wav_data() to get the raw audio data
-                util.display_message(history_container, "user", audio.get_wav_data(), transcription)
                 answer = ecco6_agent.chat_completion([
                     {"role": m["role"], "content": m["content"]}
                     for m in st.session_state.messages
                 ])
-                logging.info(f"trying to play {answer}.")
                 if answer:
+                    logging.info(f"trying to play {answer}.")
                     audio_response = openai_client.text_to_speech(answer)
                     util.append_message("assistant", answer, audio_response)  # Pass the audio response
-                    util.display_message(history_container, "assistant", audio_response, answer)  # Pass the audio response
+                    st.markdown('<style> #audio { display: none; } </style>', unsafe_allow_html=True)
+                    st.audio(audio_response, autoplay=True)
 
 
 # Function to listen for the wake word "Hey"
@@ -165,24 +183,26 @@ def listen_for_wake_word():
     recognizer = sr.Recognizer()
     
     # Modify this line to explicitly specify the microphone device
-    microphone = sr.Microphone(device_index=0)  # Adjust the device index as needed
+    #microphone = sr.Microphone(device_index=0)  # Adjust the device index as needed
     
-    with microphone as source:
+    with sr.Microphone(device_index=0) as source:
         recognizer.adjust_for_ambient_noise(source)
         print("Listening for wake word 'Hello'...")
         while True:
-            audio = recognizer.listen(source)
             try:
+                audio = recognizer.listen(source, timeout=1, phrase_time_limit=1)
                 wake_word = recognizer.recognize_google(audio)
                 if wake_word.lower() == "hello":
-                    print("Wake word 'Hey' detected!")
+                    print("Wake word 'Hello' detected!")
                     return True
+            except sr.WaitTimeoutError:
+               pass
             except sr.UnknownValueError:
                 pass
 
 
 # Function to record audio until silence is detected
-def record_audio_until_silence(container):
+def record_audio_until_silence():
     recognizer = sr.Recognizer()
     microphone = sr.Microphone()
     with microphone as source:

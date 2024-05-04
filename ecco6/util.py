@@ -11,20 +11,8 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S',
 )
 
-def display_history_messages(container: st.container):
-  """Display all history chatting messages in the Chatbox.
-  
-  Args:
-    container: The container to display the history messages.
-  """
-  with container:
-    for message in st.session_state.messages:
-      with st.chat_message(message["role"]):
-        st.audio(message["audio"])
-        st.markdown(message["content"])
-        logging.info(f"display {message['content']} from history")
 
-def display_audio_recording(container: st.container) -> "audiorecorder":
+def display_audio_recording() -> "audiorecorder":
   """Display audio recoriding in the Chatbox.
   
   Args:
@@ -33,9 +21,8 @@ def display_audio_recording(container: st.container) -> "audiorecorder":
     The recorded audiorecorder.
   """
   from audiorecorder import audiorecorder
-  with container:
-    audio = audiorecorder("Click to record", "Click to stop recording")
-    return audio
+  audio = audiorecorder("Click to record", "Click to stop recording")
+  return audio
     
 def append_message(role: str, content: str, audio: bytes):
   """Append a message to the session state.
@@ -52,30 +39,6 @@ def append_message(role: str, content: str, audio: bytes):
       "audio": audio,
   })
 
-def display_message(container: st.container, role: str, audio: bytes, content: str):
-  """Display a single message.
-  
-  Args:
-    container: The container to display the message.
-    role: The role of the message, can be user or assistant.
-    audio: Bytes of the audio recoriding, which is corresponds to the
-      content.
-    content: The content of the message.
-  """
-  with container:
-    with st.chat_message(role):
-      if role == "assistant":
-          audio_base64 = base64.b64encode(audio).decode()
-          html_string = f"""
-              <audio controls autoplay>
-                <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
-              </audio>
-          """
-          sound = st.empty()
-          sound.markdown(html_string, unsafe_allow_html=True)
-      else:
-          st.audio(audio)
-      st.markdown(content)
 
 def create_memory_file(content: bytes, filename: str) -> BinaryIO:
   """Create memory file by giving file content and file name.
