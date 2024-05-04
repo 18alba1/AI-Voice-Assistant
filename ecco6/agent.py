@@ -158,12 +158,13 @@ class Ecco6Agent:
       tools.append(get_news_tool)
 
     get_weather_tool = StructuredTool.from_function(
-         func=weather.get_weather,
-         name="get_weather",
-         description="Get the current weather forecast for a specified city.",
-         args_schema=weather.GetWeatherInput,
+          func=weather.get_weather,
+          name="get_weather",
+          description="Get the current weather forecast for a specified city.",
+          args_schema=weather.GetWeatherInput,
     )
     tools.append(get_weather_tool)
+
 
     if self.rpi_url is not None:
       set_rpi_alarm_tool = StructuredTool.from_function(
