@@ -1,6 +1,8 @@
 import logging
 from typing import Tuple
 import speech_recognition as sr
+import pygame
+import os
 
 import streamlit as st
 from google.auth.transport.requests import Request
@@ -12,7 +14,6 @@ from ecco6 import util
 from ecco6.agent import Ecco6Agent
 from ecco6.auth import firebase_auth
 from ecco6.client.OpenAIClient import OpenAIClient
-
 
 def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
   """Initialize the Chatbox and the Sidebar of streamlit.
@@ -177,13 +178,15 @@ def homepage_view():
                     st.markdown('<style> #audio { display: none; } </style>', unsafe_allow_html=True)
                     st.audio(audio_response, autoplay=True)
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sound_file = "connected.mp3"
+sound_file_path = os.path.join(current_dir, sound_file)
+pygame.mixer.init()
+pygame.mixer.music.load(sound_file_path)
 
-# Function to listen for the wake word "Hey"
+# Function to listen for the wake word "Hello"
 def listen_for_wake_word():
     recognizer = sr.Recognizer()
-    
-    # Modify this line to explicitly specify the microphone device
-    #microphone = sr.Microphone(device_index=0)  # Adjust the device index as needed
     
     with sr.Microphone(device_index=0) as source:
         recognizer.adjust_for_ambient_noise(source)
@@ -194,12 +197,12 @@ def listen_for_wake_word():
                 wake_word = recognizer.recognize_google(audio)
                 if wake_word.lower() == "hello":
                     print("Wake word 'Hello' detected!")
+                    pygame.mixer.music.play()
                     return True
             except sr.WaitTimeoutError:
-               pass
+                pass
             except sr.UnknownValueError:
                 pass
-
 
 # Function to record audio until silence is detected
 def record_audio_until_silence():

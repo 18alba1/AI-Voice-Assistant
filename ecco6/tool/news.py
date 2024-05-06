@@ -15,7 +15,7 @@ def get_top_headlines():
     headlines_info = []
 
     if 'items' in data:
-        top_5_headlines = data['items'][:5]
+        top_5_headlines = data['items'][:3]
         for item in top_5_headlines:
             title = item.get('title', 'Title not available')
             snippet = item.get('snippet', 'Snippet not available')
