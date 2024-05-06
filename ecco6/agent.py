@@ -17,6 +17,7 @@ if they helps you handle the request from the user. You will also have access
 to their calendar and gmail as function calling if possible. You can get real-time information
 by calling functions. Do not make up answer or the question and request that you do not know or 
 if the tools does not provide information to answer that question.
+In the Google Task, we can create multiple task lists, and each task list can contain multiple tasks.
 """
 
 
@@ -132,6 +133,15 @@ class Ecco6Agent:
         args_schema=google.AddTaskInput,
     )
     tools.append(add_task_tool)
+
+    remove_task_list_tool = StructuredTool.from_function(
+        func=functools.partial(
+        google.remove_task_list, google_credentials=self.google_credentials),
+        name="remove_task_list",
+        description="Remove the entire task list in Google Tasks.",
+        args_schema=google.RemoveTaskListInput,
+    )
+    tools.append(remove_task_list_tool)
 
     remove_task_tool = StructuredTool.from_function(
         func=functools.partial(

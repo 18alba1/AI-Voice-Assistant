@@ -291,6 +291,25 @@ def add_task(task_name: str, task_list_name: str, google_credentials) -> str:
     except Exception as e:
         return f"An error occurred: {e}"
 
+class RemoveTaskListInput(BaseModel):
+    task_list_name: str = Field(description="The name of the task list to remove the task.")
+
+def remove_task_list(task_list_name: str, google_credentials) -> str:
+    service = build("tasks", "v1", credentials=google_credentials)
+
+    task_lists = service.tasklists().list(maxResults=10).execute()
+    items = task_lists.get("items", [])
+
+    task_list_id = None
+    for item in items:
+        if SequenceMatcher(None, item["title"].lower(), task_list_name.lower()).ratio() > 0.9:
+            task_list_id = item["id"]
+            service.tasklists().delete(tasklist=task_list_id).execute()
+            return f'The {task_list_name} list has been succefully removed.'
+       
+    if task_list_id is None:
+        return f'No task list found with the name "{task_list_name}"'
+    
 
 class RemoveTaskInput(BaseModel):
     task_list_name: str = Field(description="The name of the task list to remove the task.")
