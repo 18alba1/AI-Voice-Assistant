@@ -8,7 +8,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
 
-from ecco6.tool import google, location, time, weather, rpi_alarm, news
+from ecco6.tool import google, location, time, weather, rpi_alarm, news, sl
 
 SYS_PROMPT = """\
 You are a voice assistant named Ecco6. Your task is to handle questions and
@@ -184,6 +184,14 @@ class Ecco6Agent:
           args_schema=rpi_alarm.SetRpiAlarmInput,
       )
       tools.append(set_rpi_alarm_tool)
+    
+    get_travel_suggestions_tool = StructuredTool.from_function(
+        func=sl.get_travel_suggestions,
+        name="get_travel_suggestions",
+        description="Get travel suggestions for a specific journey.",
+        args_schema=sl.GetTravelSuggestionsInput,
+    )
+    tools.append(get_travel_suggestions_tool)
     return tools
   
   def chat_completion(self, messages: Sequence[Mapping[str, str]]) -> str:
