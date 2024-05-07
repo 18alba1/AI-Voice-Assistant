@@ -3,6 +3,7 @@ from typing import Tuple
 import speech_recognition as sr
 import pygame
 import os
+import base64
 
 import streamlit as st
 from google.auth.transport.requests import Request
@@ -14,6 +15,17 @@ from ecco6 import util
 from ecco6.agent import Ecco6Agent
 from ecco6.auth import firebase_auth
 from ecco6.client.OpenAIClient import OpenAIClient
+
+import firebase_admin
+from firebase_admin import db
+
+import time
+import datetime
+import pyttsx3
+import threading
+
+
+
 
 def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
   """Initialize the Chatbox and the Sidebar of streamlit.
@@ -51,6 +63,7 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
   st.write("      - 2. Getting your location")
   st.write("      - 3. Modifying your tasks")
   st.write("      - 4. Listening to music")
+
 
   with st.sidebar:
     st.markdown("""
@@ -175,8 +188,20 @@ def homepage_view():
                     logging.info(f"trying to play {answer}.")
                     audio_response = openai_client.text_to_speech(answer)
                     util.append_message("assistant", answer, audio_response)  # Pass the audio response
-                    st.markdown('<style> #audio { display: none; } </style>', unsafe_allow_html=True)
-                    st.audio(audio_response, autoplay=True)
+                    audio_base64 = base64.b64encode(audio_response).decode()
+
+                    # Create HTML string with audio tag set to autoplay and hidden
+                    html_string = f"""
+                    <audio controls autoplay hidden>
+                        <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
+                    </audio>
+                    """
+
+                    # Display the HTML string
+                    st.markdown(html_string, unsafe_allow_html=True)
+
+
+                      
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sound_file = "connected.mp3"
