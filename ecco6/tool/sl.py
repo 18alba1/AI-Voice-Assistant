@@ -1,3 +1,4 @@
+import os
 import difflib
 import csv
 import requests
@@ -5,7 +6,9 @@ from langchain.pydantic_v1 import BaseModel, Field
 from langchain.tools import StructuredTool
 import streamlit as st
 
-stops_file = "/Users/alex/Documents/GitHub/Ecco6py/II1302_Ecco6/ecco6/tool/stops.txt"
+current_dir = os.path.dirname(__file__)
+
+stops_file = os.path.join(current_dir, "stops.txt")
 
 def get_station_coordinates(station_name):
     with open(stops_file, newline='', encoding='utf-8') as csvfile:
@@ -21,7 +24,6 @@ def get_station_coordinates(station_name):
                 if row['stop_name'].lower() == closest_station_name:
                     return float(row['stop_lat']), float(row['stop_lon'])
     return None, None
-
 
 API_KEY = st.secrets["SL_RESEPLANERARE_API_KEY"]
 
