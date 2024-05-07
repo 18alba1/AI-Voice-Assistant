@@ -225,7 +225,7 @@ def listen_for_wake_word():
                     pygame.mixer.music.play()
                     return True
             except sr.WaitTimeoutError:
-                pass
+              pass
             except sr.UnknownValueError:
               pass
 

@@ -20,4 +20,5 @@ setuptools
 pyaudio
 speechrecognition
 pygame
+pyttsx3
 .
