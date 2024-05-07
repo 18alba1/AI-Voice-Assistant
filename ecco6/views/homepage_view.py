@@ -1,6 +1,9 @@
 import logging
 from typing import Tuple
 import speech_recognition as sr
+import pygame
+import os
+import base64
 
 import streamlit as st
 from google.auth.transport.requests import Request
@@ -12,6 +15,16 @@ from ecco6 import util
 from ecco6.agent import Ecco6Agent
 from ecco6.auth import firebase_auth
 from ecco6.client.OpenAIClient import OpenAIClient
+
+import firebase_admin
+from firebase_admin import db
+
+import time
+import datetime
+import pyttsx3
+import threading
+
+
 
 
 def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
@@ -50,6 +63,7 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
   st.write("      - 2. Getting your location")
   st.write("      - 3. Modifying your tasks")
   st.write("      - 4. Listening to music")
+
 
   with st.sidebar:
     st.markdown("""
@@ -174,16 +188,30 @@ def homepage_view():
                     logging.info(f"trying to play {answer}.")
                     audio_response = openai_client.text_to_speech(answer)
                     util.append_message("assistant", answer, audio_response)  # Pass the audio response
-                    st.markdown('<style> #audio { display: none; } </style>', unsafe_allow_html=True)
-                    st.audio(audio_response, autoplay=True)
+                    audio_base64 = base64.b64encode(audio_response).decode()
+
+                    # Create HTML string with audio tag set to autoplay and hidden
+                    html_string = f"""
+                    <audio controls autoplay hidden>
+                        <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
+                    </audio>
+                    """
+
+                    # Display the HTML string
+                    st.markdown(html_string, unsafe_allow_html=True)
 
 
-# Function to listen for the wake word "Hey"
+                      
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sound_file = "connected.mp3"
+sound_file_path = os.path.join(current_dir, sound_file)
+pygame.mixer.init()
+pygame.mixer.music.load(sound_file_path)
+
+# Function to listen for the wake word "Hello"
 def listen_for_wake_word():
     recognizer = sr.Recognizer()
-    
-    # Modify this line to explicitly specify the microphone device
-    #microphone = sr.Microphone(device_index=0)  # Adjust the device index as needed
     
     with sr.Microphone(device_index=0) as source:
         recognizer.adjust_for_ambient_noise(source)
@@ -194,12 +222,12 @@ def listen_for_wake_word():
                 wake_word = recognizer.recognize_google(audio)
                 if wake_word.lower() == "hello":
                     print("Wake word 'Hello' detected!")
+                    pygame.mixer.music.play()
                     return True
             except sr.WaitTimeoutError:
-              pass
+                pass
             except sr.UnknownValueError:
               pass
-
 
 # Function to record audio until silence is detected
 def record_audio_until_silence():

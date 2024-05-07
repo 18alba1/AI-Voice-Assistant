@@ -9,6 +9,44 @@ import streamlit as st
 from firebase_admin import auth, credentials, exceptions, initialize_app
 from httpx_oauth.clients.google import GoogleOAuth2
 
+import os
+
+import firebase_admin
+from firebase_admin import credentials
+
+import toml
+
+firebase_credentials = {
+    "type": st.secrets["FIREBASE"]["TYPE"],
+    "project_id": st.secrets["FIREBASE"]["PROJECT_ID"],
+    "private_key_id": st.secrets["FIREBASE"]["PRIVATE_KEY_ID"],
+    "private_key": st.secrets["FIREBASE"]["PRIVATE_KEY"].replace('\\n', '\n'),
+    "client_email": st.secrets["FIREBASE"]["CLIENT_EMAIL"],
+    "client_id": st.secrets["FIREBASE"]["CLIENT_ID"],
+    "auth_uri": st.secrets["FIREBASE"]["AUTH_URI"],
+    "token_uri": st.secrets["FIREBASE"]["TOKEN_URI"],
+    "auth_provider_x509_cert_url": st.secrets["FIREBASE"]["AUTH_PROVIDER_X509_CERT_URL"],
+    "client_x509_cert_url": st.secrets["FIREBASE"]["CLIENT_X509_CERT_URL"]
+}
+
+# Initialize Firebase app with the provided credentials and database URL
+cred = credentials.Certificate(firebase_credentials)
+firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://ecco6-803de-default-rtdb.europe-west1.firebasedatabase.app/'
+})
+
+# Check if the default app instance exists
+if firebase_admin.get_app():
+    # Access the default app instance
+    default_app = firebase_admin.get_app()
+
+    # Print information about the default app instance
+    print("Firebase app initialized successfully.")
+    print("Project ID:", default_app.project_id)
+    print("Database URL:", default_app.options.get('databaseURL'))
+else:
+    print("Error: Firebase app initialization failed.")
+
 ## -------------------------------------------------------------------------------------------------
 ## Firebase Auth API -------------------------------------------------------------------------------
 ## -------------------------------------------------------------------------------------------------
@@ -70,28 +108,6 @@ def raise_detailed_error(request_object):
 ## -------------------------------------------------------------------------------------------------
 ## Authentication functions ------------------------------------------------------------------------
 ## -------------------------------------------------------------------------------------------------
-
-# Initialize Firebase app
-firebase_credentials = {
-    "type": st.secrets["FIREBASE"]["TYPE"],
-    "project_id": st.secrets["FIREBASE"]["TYPE"],
-    "private_key_id": st.secrets["FIREBASE"]["PRIVATE_KEY_ID"],
-    "private_key": st.secrets["FIREBASE"]["PRIVATE_KEY"],
-    "client_email": st.secrets["FIREBASE"]["CLIENT_EMAIL"],
-    "client_id": st.secrets["FIREBASE"]["CLIENT_ID"],
-    "auth_uri": st.secrets["FIREBASE"]["AUTH_URI"],
-    "token_uri": st.secrets["FIREBASE"]["TOKEN_URI"],
-    "auth_provider_x509_cert_url": st.secrets["FIREBASE"]["AUTH_PROVIDER_X509_CERT_URL"],
-    "client_x509_cert_url": st.secrets["FIREBASE"]["CLIENT_X509_CERT_URL"],
-}
-cred = credentials.Certificate(firebase_credentials)
-try:
-    logging.info("Initializing Firebase app...")  
-    firebase_admin.get_app()
-    logging.info("Firebase app initialized successfully.")  
-except ValueError as e:
-    logging.error("Error initializing Firebase app: %s", e)  
-    initialize_app(cred)
 
 # Initialize Google OAuth2 client
 client_id = st.secrets["GOOGLE_AUTH"]["CLIENT_ID"] 
@@ -221,6 +237,7 @@ def get_logged_in_user_email():
                     except exceptions.FirebaseError:
                         user = auth.create_user(email=user_email)
                     st.session_state.email = user.email
+                    print("Received user email:", st.session_state.email)
                     st.session_state.user_info = {"user_id": user.uid, "user_email": user.email}  # Set user_info in session state
                     return user.email
         return None
