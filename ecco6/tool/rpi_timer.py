@@ -2,10 +2,10 @@ import requests
 from langchain.pydantic_v1 import BaseModel, Field
 
 
-class SetRpiAlarmInput(BaseModel):
-    time: str = Field(description="The time set for the alarm in HH:MM:SS format.")
+class SetRpiTimerInput(BaseModel):
+    time: str = Field(description="The time set for the timer in HH:MM:SS format.")
 
-def set_rpi_alarm(time: str, url: str):
+def set_rpi_timer(time: str, url: str):
     time_list = time.strip().split(":")
     if len(time_list) != 3:
         return "Time not in HH:MM:SS format."
@@ -18,4 +18,4 @@ def set_rpi_alarm(time: str, url: str):
     except requests.exceptions.HTTPError as e:
         return str(e)
 
-    return "Alarm has been successfully set."
+    return "The timer has been successfully set."

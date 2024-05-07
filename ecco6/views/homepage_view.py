@@ -196,9 +196,9 @@ def listen_for_wake_word():
                     print("Wake word 'Hello' detected!")
                     return True
             except sr.WaitTimeoutError:
-               pass
+              pass
             except sr.UnknownValueError:
-                pass
+              pass
 
 
 # Function to record audio until silence is detected
@@ -208,6 +208,6 @@ def record_audio_until_silence():
     with microphone as source:
         recognizer.adjust_for_ambient_noise(source)
         print("Listening...")
-        audio = recognizer.listen(source, timeout=None)
+        audio = recognizer.listen(source, timeout=2)
         print("Stopped listening.")
         return audio

@@ -8,14 +8,15 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
 
-from ecco6.tool import google, location, time, weather, rpi_alarm, news
+from ecco6.tool import google, location, rpi_timer, time, weather, news, light
 
 SYS_PROMPT = """\
 You are a voice assistant named Ecco6. Your task is to handle questions and
 request from users. You have access to various tools and you must call them
 if they helps you handle the request from the user. You will also have access
-to their calendar and gmail as function calling if possible. You can get real-time information
-by calling functions. Do not make up answer or the question and request that you do not know or 
+to their calendar, gmail and tasks as function calling if possible. You can get real-time information, 
+local information by calling functions. You can also set timer and alarms for users. You have access 
+to smart light as well. Do not make up answer or the question and request that you do not know or 
 if the tools does not provide information to answer that question.
 In the Google Task, we can create multiple task lists, and each task list can contain multiple tasks.
 """
@@ -23,7 +24,7 @@ In the Google Task, we can create multiple task lists, and each task list can co
 
 class Ecco6Agent:
   def __init__(
-      self, openai_api_key: str, google_credentials, rpi_url, chat_model: str = "gpt-4-turbo"):
+    self, openai_api_key: str, google_credentials, rpi_url, chat_model: str = "gpt-4-turbo"):
     self.google_credentials = google_credentials
     self.rpi_url = rpi_url
     llm = ChatOpenAI(model=chat_model, api_key=openai_api_key)
@@ -177,14 +178,75 @@ class Ecco6Agent:
 
 
     if self.rpi_url is not None:
-      set_rpi_alarm_tool = StructuredTool.from_function(
-          func=functools.partial(rpi_alarm.set_rpi_alarm, url=self.rpi_url),
-          name="set_rpi_alarm",
-          description="Set an alarm/countdown by given time.",
-          args_schema=rpi_alarm.SetRpiAlarmInput,
+      set_rpi_timer_tool = StructuredTool.from_function(
+          func=functools.partial(rpi_timer.set_rpi_timer, url=self.rpi_url),
+          name="set_rpi_timer",
+          description="Set an timer/countdown by given time.",
+          args_schema=rpi_timer.SetRpiTimerInput,
       )
-      tools.append(set_rpi_alarm_tool)
+      tools.append(set_rpi_timer_tool)
+
+    turn_on_light_tool = StructuredTool.from_function(
+        func=functools.partial(
+          light.turn_on_light, 
+          url=st.secrets["LIGHT"]["URL"]+"/api/services/script/turn_on_bulb",
+          token = st.secrets["LIGHT"]["API_KEY"]
+        ),
+        name="turn_on_light",
+        description="Turn on the light.",
+        args_schema=light.SetLightInput,
+    )
+    tools.append(turn_on_light_tool)
+
+    turn_off_light_tool = StructuredTool.from_function(
+        func=functools.partial(
+          light.turn_off_light,
+          url=st.secrets["LIGHT"]["URL"]+"/api/services/script/turn_off_bulb",
+          token=st.secrets["LIGHT"]["API_KEY"]
+        ),
+        name="turn_off_light",
+        description="Turn off the light.",
+        args_schema=light.SetLightInput,
+    )
+    tools.append(turn_off_light_tool)
+
+    set_brightness_low_tool = StructuredTool.from_function(
+        func=functools.partial(
+          light.set_brightness_low, 
+          url=st.secrets["LIGHT"]["URL"]+"/api/services/script/set_brightness_low",
+          token = st.secrets["LIGHT"]["API_KEY"]
+        ),
+        name="set_brightness_low",
+        description="Set the brightness of the light as low.",
+        args_schema=light.SetLightInput,
+    )
+    tools.append(set_brightness_low_tool)
+
+    set_brightness_medium_tool = StructuredTool.from_function(
+        func=functools.partial(
+          light.set_brightness_medium, 
+          url=st.secrets["LIGHT"]["URL"]+"/api/services/script/set_brightness_medium",
+          token = st.secrets["LIGHT"]["API_KEY"]
+        ),
+        name="set_brightness_medium",
+        description="Set the brightness of the light as medium.",
+        args_schema=light.SetLightInput,
+    )
+    tools.append(set_brightness_medium_tool)
+
+    set_brightness_high_tool = StructuredTool.from_function(
+        func=functools.partial(
+          light.set_brightness_high, 
+          url=st.secrets["LIGHT"]["URL"]+"/api/services/script/set_brightness_high",
+          token = st.secrets["LIGHT"]["API_KEY"]
+        ),
+        name="set_brightness_high",
+        description="Set the brightness of the light as high.",
+        args_schema=light.SetLightInput,
+    )
+    tools.append(set_brightness_high_tool)
     return tools
+  
   
   def chat_completion(self, messages: Sequence[Mapping[str, str]]) -> str:
     chat_history = []
