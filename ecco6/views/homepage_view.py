@@ -97,7 +97,7 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
     with settings_expander:
       openai_chat_model = st.selectbox(
         "OpenAI chat model",
-        ("gpt-4-turbo", "gpt-3.5-turbo")
+        ("gpt-3.5-turbo", "gpt-4-turbo")
       )
       openai_tts_voice = st.selectbox(
         "OpenAI voice options",
