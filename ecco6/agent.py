@@ -200,18 +200,12 @@ class Ecco6Agent:
     tools.append(get_alarm_tool)
 
     modify_alarm_tool = StructuredTool.from_function(
-        func=lambda day, date, clock, title=None, new_day=None, new_date=None, new_clock=None, new_title=None: alarm.modify_alarm(
-            alarm.SetAlarmInput(day=day, date=date, clock=clock, title=title),
-            alarm.NewAlarmInput(day=new_day, date=new_date, clock=new_clock, title=new_title)
-        ),
+        func=lambda existing_day, existing_date, existing_clock, existing_title=None, new_day=None, new_date=None, new_clock=None, new_title=None: alarm.modify_alarm(alarm.ModifyAlarmArgs(existing_day=existing_day,existing_date=existing_date,existing_clock=existing_clock,existing_title=existing_title,new_day=new_day,new_date=new_date,new_clock=new_clock,new_title=new_title)),
         name="modify_alarm",
         description="Modify an existing alarm with new information.",
-        args_schema=alarm.SetAlarmInput, 
+        args_schema=alarm.ModifyAlarmArgs, 
     )
     tools.append(modify_alarm_tool)
-
-
-
 
     if self.rpi_url is not None:
       set_rpi_timer_tool = StructuredTool.from_function(

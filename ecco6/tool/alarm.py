@@ -14,11 +14,15 @@ class SetAlarmInput(BaseModel):
     title: Optional[str] = Field(description="Optional title for the alarm.")
 
 
-class NewAlarmInput(BaseModel):
-    day: Optional[str] = Field(description="The day to set the alarm for.")
-    date: Optional[str] = Field(description="The date to set the alarm for.")
-    clock: Optional[str] = Field(description="The time to set the alarm for.")
-    title: Optional[str] = Field(description="Optional title for the alarm.")
+class ModifyAlarmArgs(BaseModel):
+    existing_day: str
+    existing_date: str
+    existing_clock: str
+    existing_title: str = None
+    new_day: str = None
+    new_date: str = None
+    new_clock: str = None
+    new_title: str = None
 
 
 # Implement the alarm function
@@ -72,7 +76,7 @@ def delete_alarm(alarm_info: SetAlarmInput) -> str:
         return "No alarms found matching the specified properties."
 
 
-def modify_alarm(alarm_info: SetAlarmInput, new_alarm_info: NewAlarmInput) -> str:
+def modify_alarm(args: ModifyAlarmArgs) -> str:
     # Get the user's email
     user_email = st.session_state.email.replace(".", "_")
 
@@ -80,32 +84,43 @@ def modify_alarm(alarm_info: SetAlarmInput, new_alarm_info: NewAlarmInput) -> st
     alarms_ref = db.reference(f'/users/{user_email}/alarms')
     alarms_to_modify = alarms_ref.get()
 
-        # Filter alarms based on provided properties
-    if alarm_info.day:
-        alarms_to_modify = {alarm_id: alarm_data for alarm_id, alarm_data in alarms_to_modify.items() if alarm_data.get('day') == alarm_info.day}
-    if alarm_info.date:
-        alarms_to_modify = {alarm_id: alarm_data for alarm_id, alarm_data in alarms_to_modify.items() if alarm_data.get('date') == alarm_info.date}
-    if alarm_info.clock:
-        alarms_to_modify = {alarm_id: alarm_data for alarm_id, alarm_data in alarms_to_modify.items() if alarm_data.get('clock') == alarm_info.clock}
-    if alarm_info.title:
-        alarms_to_modify = {alarm_id: alarm_data for alarm_id, alarm_data in alarms_to_modify.items() if alarm_data.get('title') == alarm_info.title}
+    # Filter alarms based on day
+    if args.existing_day:
+        alarms_to_modify = {alarm_id: alarm_data for alarm_id, alarm_data in alarms_to_modify.items() if alarm_data.get('day') == args.existing_day}
+
+    # Filter alarms based on date
+    if args.existing_date:
+        alarms_to_modify = {alarm_id: alarm_data for alarm_id, alarm_data in alarms_to_modify.items() if alarm_data.get('date') == args.existing_date}
+
+    # Filter alarms based on clock
+    if args.existing_clock:
+        alarms_to_modify = {alarm_id: alarm_data for alarm_id, alarm_data in alarms_to_modify.items() if alarm_data.get('clock') == args.existing_clock}
+
+    # Filter alarms based on title
+    if args.existing_title:
+        alarms_to_modify = {alarm_id: alarm_data for alarm_id, alarm_data in alarms_to_modify.items() if alarm_data.get('title') == args.existing_title}
 
     # Check if any alarms match the given properties
     if alarms_to_modify:
-        try:
-            # Iterate over the matching alarms and modify them
-            for alarm_id, alarm_data in alarms_to_modify.items():
-                if new_alarm_info.day is not None:
-                    alarms_ref.child(alarm_id).update({"day": new_alarm_info.day})
-                if new_alarm_info.date is not None:
-                    alarms_ref.child(alarm_id).update({"date": new_alarm_info.date})
-                if new_alarm_info.clock is not None:
-                    alarms_ref.child(alarm_id).update({"clock": new_alarm_info.clock})
-                if new_alarm_info.title is not None:
-                    alarms_ref.child(alarm_id).update({"title": new_alarm_info.title})
-            return "Alarms matching the specified properties modified successfully."
-        except Exception as e:
-            return f"Error modifying alarms: {str(e)}"
+        # Iterate over the matching alarms and modify them
+        for alarm_id, alarm_data in alarms_to_modify.items():  
+            # Update the alarm day if new day is provided
+            if args.new_day is not None:
+                alarms_ref.child(alarm_id).update({"day": args.new_day})
+
+            # Update the alarm date if new date is provided
+            if args.new_date is not None:
+                alarms_ref.child(alarm_id).update({"date": args.new_date})
+
+            # Update the alarm clock if new clock is provided
+            if args.new_clock is not None:
+                alarms_ref.child(alarm_id).update({"clock": args.new_clock})
+
+            # Update the alarm title if new title is provided
+            if args.new_title is not None:
+                alarms_ref.child(alarm_id).update({"title": args.new_title})
+            
+        return "Alarms matching the specified properties modified successfully."
     else:
         return "No alarms found matching the specified properties."
 
@@ -168,6 +183,9 @@ def check_and_notify_alarms(email):
                     alarms_ref.child(key).delete()
                 else:
                     print(f"Alarm {alarm_time} is still pending.")
+            
+            engine.runAndWait()
+
 
             # Check if the engine is already running
             if not engine.isBusy():
