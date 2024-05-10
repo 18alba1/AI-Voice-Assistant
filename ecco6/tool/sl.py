@@ -7,25 +7,25 @@ from langchain.tools import StructuredTool
 import streamlit as st
 import requests
 from .location import get_current_location
+from ecco6.tool import stops
 
 #================ TRAVEL PLANER ===================
-current_dir = os.path.dirname(__file__)
+#current_dir = os.path.dirname(__file__)
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 stops_file = os.path.join(current_dir, "stops.txt")
 
 def get_station_coordinates(station_name):
-    with open(stops_file, newline='', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
-        station_names = [row['stop_name'].lower() for row in reader]
+    reader = csv.DictReader(stops.STOP_CSV_STR.splitlines())
+    station_names = [row['stop_name'].lower() for row in reader]
 
     closest_matches = difflib.get_close_matches(station_name.lower(), station_names, n=1, cutoff=0.6)
     if closest_matches:
         closest_station_name = closest_matches[0]
-        with open(stops_file, newline='', encoding='utf-8') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                if row['stop_name'].lower() == closest_station_name:
-                    return float(row['stop_lat']), float(row['stop_lon'])
+        reader = csv.DictReader(stops.STOP_CSV_STR.splitlines())
+        for row in reader:
+            if row['stop_name'].lower() == closest_station_name:
+                return float(row['stop_lat']), float(row['stop_lon'])
     return None, None
 
 SL_RESEPLANERARE_API_KEY = st.secrets["SL_RESEPLANERARE_API_KEY"]

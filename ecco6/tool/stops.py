@@ -1,3 +1,4 @@
+STOP_CSV_STR = """\
 stop_id,stop_name,stop_lat,stop_lon,location_type
 100000351,Tornio På Gränsen Rajala,65.843294,24.145138,
 100083169,Lappia Yrkesskola (FIN),65.851575,24.136419,
@@ -48672,3 +48673,4 @@ stop_id,stop_name,stop_lat,stop_lon,location_type
 860000857,Tårnby,55.629947,12.602095,
 860000858,Copenhagen Airport,55.629503,12.645195,
 860024917,Köbenhavn Ingerslevsgade,55.670101,12.565498,
+"""
