@@ -57,12 +57,12 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
   st.write("2. Say the wake word 'Hello' to get the Ecco6 ready for your questions.")
   st.write("   Before each question, say the wake word 'Hello'.")
   st.write("3. In the sidebar:")
-  st.write("   - 3.1. Connect to your different accounts such as Google and Spotify to access our different services.")
+  st.write("   - 3.1. Connect the app with your Google account to access the full potential of our different services.")
   st.write("   -  Services include:")
   st.write("      - 1. Modifying your Google Calendar")
   st.write("      - 2. Getting your location")
   st.write("      - 3. Modifying your tasks")
-  st.write("      - 4. Listening to music")
+  st.write("      - 4. Realtime weather and news infromation")
 
 
   with st.sidebar:
@@ -97,7 +97,7 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
     with settings_expander:
       openai_chat_model = st.selectbox(
         "OpenAI chat model",
-        ("gpt-4-turbo", "gpt-3.5-turbo")
+        ("gpt-3.5-turbo", "gpt-4-turbo")
       )
       openai_tts_voice = st.selectbox(
         "OpenAI voice options",
@@ -136,7 +136,7 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
           redirect_uri = st.secrets["GOOGLE_AUTH"]["REDIRECT_URIS"][0],
       )
       if "google_credentials" not in st.session_state:
-        if st.button("Sign in with Google"):
+        if st.button("Connect with Google"):
           creds = flow.run_local_server(
             port=9000)
           st.session_state.google_credentials = creds
@@ -146,9 +146,6 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
           creds.refresh(Request())
           st.session_state.google_credentials = creds
         st.write("Logged into Google!")
-
-      st.write("Services to Spotify:")
-      st.button("Connect", key="spotify_button")
       return openai_chat_model, openai_tts_voice
 
 
@@ -167,19 +164,15 @@ def homepage_view():
         rpi_url=st.session_state.rpi_url if "rpi_url" in st.session_state else None,
         chat_model=openai_chat_model)
     
-    # Continuous interaction loop
     while True:
-        # Listen for wake word
         if listen_for_wake_word():
             print("Start recording...")
             audio = record_audio_until_silence()
             if audio:
-                # No need to export audio, directly use the AudioData object
-                # audio_data = audio.export().read()
                 buffer = util.create_memory_file(audio.get_wav_data(), "foo.wav")
                 transcription = openai_client.speech_to_text(buffer)
                 logging.info(f"User said: {transcription}.")
-                util.append_message("user", transcription, audio.get_wav_data())  # Use get_wav_data() to get the raw audio data
+                util.append_message("user", transcription, audio.get_wav_data())
                 answer = ecco6_agent.chat_completion([
                     {"role": m["role"], "content": m["content"]}
                     for m in st.session_state.messages
@@ -187,27 +180,25 @@ def homepage_view():
                 if answer:
                     logging.info(f"trying to play {answer}.")
                     audio_response = openai_client.text_to_speech(answer)
-                    util.append_message("assistant", answer, audio_response)  # Pass the audio response
+                    util.append_message("assistant", answer, audio_response)
                     audio_base64 = base64.b64encode(audio_response).decode()
 
-                    # Create HTML string with audio tag set to autoplay and hidden
                     html_string = f"""
                     <audio controls autoplay hidden>
                         <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
                     </audio>
                     """
 
-                    # Display the HTML string
                     st.markdown(html_string, unsafe_allow_html=True)
 
-
-                      
-
 current_dir = os.path.dirname(os.path.abspath(__file__))
-sound_file = "connected.mp3"
-sound_file_path = os.path.join(current_dir, sound_file)
+sound_file_hello = "connected.mp3"
+sound_file_stop = "stop.mp3"
+sound_file_path_hello = os.path.join(current_dir, sound_file_hello)
+sound_file_path_stop = os.path.join(current_dir, sound_file_stop)
 pygame.mixer.init()
-pygame.mixer.music.load(sound_file_path)
+pygame.mixer.music.load(sound_file_path_hello)
+stop_sound = pygame.mixer.Sound(sound_file_path_stop)
 
 # Function to listen for the wake word "Hello"
 def listen_for_wake_word():
@@ -238,4 +229,5 @@ def record_audio_until_silence():
         print("Listening...")
         audio = recognizer.listen(source, timeout=2)
         print("Stopped listening.")
+        stop_sound.play()
         return audio

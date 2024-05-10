@@ -289,6 +289,14 @@ class Ecco6Agent:
         args_schema=sl.GetTravelSuggestionsInput,
     )
     tools.append(get_travel_suggestions_tool)
+    
+    get_nearby_stops_tool = StructuredTool.from_function(
+        func=sl.get_nearby_stops,
+        name="get_nearby_stops",
+        description="Get nearby stops based on current location.",
+        args_schema=sl.GetNearbyStopsInput,
+    )
+    tools.append(get_nearby_stops_tool)
     return tools
   
   

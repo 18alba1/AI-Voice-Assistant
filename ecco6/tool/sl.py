@@ -5,7 +5,10 @@ import requests
 from langchain.pydantic_v1 import BaseModel, Field
 from langchain.tools import StructuredTool
 import streamlit as st
+import requests
+from .location import get_current_location
 
+#================ TRAVEL PLANER ===================
 current_dir = os.path.dirname(__file__)
 
 stops_file = os.path.join(current_dir, "stops.txt")
@@ -25,7 +28,7 @@ def get_station_coordinates(station_name):
                     return float(row['stop_lat']), float(row['stop_lon'])
     return None, None
 
-API_KEY = st.secrets["SL_RESEPLANERARE_API_KEY"]
+SL_RESEPLANERARE_API_KEY = st.secrets["SL_RESEPLANERARE_API_KEY"]
 
 class GetTravelSuggestionsInput(BaseModel):
     origin_station_name: str = Field(description="The name of the origin station.")
@@ -41,7 +44,7 @@ def get_travel_suggestions(origin_station_name: str, destination_station_name: s
     if destination_lat is None or destination_lon is None:
         return f"Error: Station '{destination_station_name}' not found in the database."
 
-    url = f"https://journeyplanner.integration.sl.se/v1/TravelplannerV3_1/trip.json?key={API_KEY}&originCoordLat={origin_lat}&originCoordLong={origin_lon}&destCoordLat={destination_lat}&destCoordLong={destination_lon}"
+    url = f"https://journeyplanner.integration.sl.se/v1/TravelplannerV3_1/trip.json?key={SL_RESEPLANERARE_API_KEY}&originCoordLat={origin_lat}&originCoordLong={origin_lon}&destCoordLat={destination_lat}&destCoordLong={destination_lon}"
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -68,3 +71,31 @@ def get_travel_suggestions(origin_station_name: str, destination_station_name: s
         return travel_suggestions
     else:
         return f"Error: {response.status_code}"
+
+#================= NEARBY STOPS ======================
+
+class GetNearbyStopsInput(BaseModel):
+    latitude: float = Field(description="The latitude of the location.")
+    longitude: float = Field(description="The longitude of the location.")
+    max_results: int = Field(default=3, description="Maximum number of nearby stops to retrieve.")
+    radius: int = Field(default=1000, description="Radius in meters around the location to search for stops.")
+
+SL_NEARBYSTOPS_API_KEY = st.secrets["SL_NEARBYSTOPS_API_KEY"]
+
+def get_nearby_stops(latitude: float, longitude: float, max_results: int = 3, radius: int = 1000) -> list:
+    url = f"https://journeyplanner.integration.sl.se/v1/nearbystopsv2.json?key={SL_NEARBYSTOPS_API_KEY}&originCoordLat={latitude}&originCoordLong={longitude}&maxNo={max_results}&r={radius}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        nearby_stops = data.get('stopLocationOrCoordLocation', [])
+        formatted_stops = []
+        for stop in nearby_stops:
+            formatted_stop = {
+                'name': stop['StopLocation']['name'],
+                'distance': stop['StopLocation']['dist'],
+                'location': stop['StopLocation']['id']
+            }
+            formatted_stops.append(formatted_stop)
+        return formatted_stops
+    else:
+        return []
