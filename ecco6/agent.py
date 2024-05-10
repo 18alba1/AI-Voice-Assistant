@@ -161,18 +161,18 @@ class Ecco6Agent:
       )
       tools.append(get_current_location_tool)
     
-      get_news_tool = StructuredTool.from_function(
-      func=news.get_top_headlines,
-      name="get_top_headlines",
-      description="Get the top headlines news from various sources."
-      )
-      tools.append(get_news_tool)
+    get_news_tool = StructuredTool.from_function(
+    func=news.get_top_headlines,
+    name="get_top_headlines",
+    description="Get the top headlines news from various sources."
+    )
+    tools.append(get_news_tool)
 
     get_weather_tool = StructuredTool.from_function(
-          func=weather.get_weather,
-          name="get_weather",
-          description="Get the current weather forecast for a specified city.",
-          args_schema=weather.GetWeatherInput,
+        func=lambda city_name: weather.get_weather(weather.WeatherInput(city_name=city_name)),
+        name="get_weather",
+        description="Get the current weather for a specified city.",
+        args_schema=weather.WeatherInput,
     )
     tools.append(get_weather_tool)
 
