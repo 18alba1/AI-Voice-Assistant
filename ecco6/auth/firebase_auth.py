@@ -12,7 +12,7 @@ from httpx_oauth.clients.google import GoogleOAuth2
 import os
 
 import firebase_admin
-from firebase_admin import credentials
+from firebase_admin import credentials, db
 
 import toml
 
@@ -50,6 +50,17 @@ else:
 ## -------------------------------------------------------------------------------------------------
 ## Firebase Auth API -------------------------------------------------------------------------------
 ## -------------------------------------------------------------------------------------------------
+def add_user_email_to_firebase(email):
+    ref = db.reference('/logged_in_users')
+    ref.push(email)
+
+# Function to remove user email from Firebase on logout
+def remove_user_email_from_firebase(email):
+    ref = db.reference('/logged_in_users')
+    users = ref.order_by_value().equal_to(email).get()
+    if users:
+        for user_id in users:
+            ref.child(user_id).delete()
 
 def sign_in_with_email_and_password(email, password):
     request_ref = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key={0}".format(st.secrets['FIREBASE_WEB_API_KEY'])
@@ -116,6 +127,13 @@ redirect_url = "http://localhost:8501"  # Your redirect URL
 
 client = GoogleOAuth2(client_id=client_id, client_secret=client_secret)
 
+#@st.cache(allow_output_mutation=True)
+#def get_session_state():
+#    return {'user_email': None}
+
+
+#session_state = get_session_state()
+
 
 def sign_in(email:str, password:str) -> None:
     try:
@@ -133,6 +151,9 @@ def sign_in(email:str, password:str) -> None:
         # Save user info to session state and rerun
         else:
             st.session_state.user_info = user_info
+            #session_state['user_email'] = email
+            add_user_email_to_firebase(st.session_state.email)
+            print("user email", session_state['user_email'])
             st.experimental_rerun()
 
     except requests.exceptions.HTTPError as error:
@@ -188,6 +209,7 @@ def reset_password(email:str) -> None:
 
 def sign_out() -> None:
     st.session_state.clear()
+    remove_user_email_from_firebase(st.session_state.email)
     st.session_state.auth_success = 'You have successfully signed out'
 
 
@@ -238,6 +260,8 @@ def get_logged_in_user_email():
                         user = auth.create_user(email=user_email)
                     st.session_state.email = user.email
                     print("Received user email:", st.session_state.email)
+                    #session_state['user_email'] = user.email
+                    add_user_email_to_firebase(st.session_state.email)
                     st.session_state.user_info = {"user_id": user.uid, "user_email": user.email}  # Set user_info in session state
                     return user.email
         return None

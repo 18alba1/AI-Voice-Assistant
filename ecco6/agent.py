@@ -177,12 +177,41 @@ class Ecco6Agent:
     tools.append(get_weather_tool)
 
     set_alarm_tool = StructuredTool.from_function(
-        func=lambda day, date, clock: alarm.set_alarm(alarm.SetAlarmInput(day=day, date=date, clock=clock)),
+        func=lambda day, date, clock, title=None: alarm.set_alarm(alarm.SetAlarmInput(day=day, date=date, clock=clock, title=title)),
         name="set_alarm",
         description="Set an alarm for a specified time.",
-        args_schema=alarm.SetAlarmInput, 
+        args_schema=alarm.SetAlarmInput,
     )
     tools.append(set_alarm_tool)
+
+    remove_alarm_tool = StructuredTool.from_function(
+        func=lambda day, date, clock, title=None: alarm.delete_alarm(alarm.SetAlarmInput(day=day, date=date, clock=clock, title=title)),
+        name="remove_alarm",
+        description="Remove an alarm of a specified time.",
+        args_schema=alarm.SetAlarmInput,
+    )
+    tools.append(remove_alarm_tool)
+
+    get_alarm_tool = StructuredTool.from_function(
+        func=alarm.list_user_alarms,
+        name="get_alarms",
+        description="Get the users alarms",
+    )
+    tools.append(get_alarm_tool)
+
+    modify_alarm_tool = StructuredTool.from_function(
+        func=lambda day, date, clock, title=None, new_day=None, new_date=None, new_clock=None, new_title=None: alarm.modify_alarm(
+            alarm.SetAlarmInput(day=day, date=date, clock=clock, title=title),
+            alarm.NewAlarmInput(day=new_day, date=new_date, clock=new_clock, title=new_title)
+        ),
+        name="modify_alarm",
+        description="Modify an existing alarm with new information.",
+        args_schema=alarm.SetAlarmInput, 
+    )
+    tools.append(modify_alarm_tool)
+
+
+
 
     if self.rpi_url is not None:
       set_rpi_timer_tool = StructuredTool.from_function(
