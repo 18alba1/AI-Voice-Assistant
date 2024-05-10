@@ -291,6 +291,23 @@ class Ecco6Agent:
         args_schema=sl.GetNearbyStopsInput,
     )
     tools.append(get_nearby_stops_tool)
+
+    create_document_tool = StructuredTool.from_function(
+        func=functools.partial(
+        google.create_document, google_credentials=self.google_credentials),
+        name="create_document",
+        description="Create a new Google Docs document.",
+        args_schema=google.CreateDocumnetInput,
+    )
+    tools.append(create_document_tool)
+
+    insert_text_tool = StructuredTool.from_function(
+        func=functools.partial(google.insert_text, google_credentials=self.google_credentials),
+        name="insert_text",
+        description="Insert text into a Google Docs document.",
+        args_schema=google.InsertTextInput,
+    )
+    tools.append(insert_text_tool)
     return tools
   
   

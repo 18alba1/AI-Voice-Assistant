@@ -128,7 +128,10 @@ def init_homepage() -> Tuple[st.selectbox, st.selectbox]:
       scopes = [
          "https://www.googleapis.com/auth/calendar",
          "https://mail.google.com/",
-         "https://www.googleapis.com/auth/tasks"
+         "https://www.googleapis.com/auth/tasks",
+         "https://www.googleapis.com/auth/documents",
+         "https://www.googleapis.com/auth/drive",
+         "https://www.googleapis.com/auth/drive.appdata"
       ]
       flow = InstalledAppFlow.from_client_config(
           google_client_config,

@@ -51,8 +51,8 @@ def get_events_by_date(date: str, google_credentials) -> str:
 
 class AddEventInput(BaseModel):
     title: str = Field(description="The title of the event.")
-    start_time: str = Field(description="The start time of the event.")
-    end_time: str = Field(description="The end time of the event.")
+    start_time: str = Field(description="The start datetime of the event, which is in YYYY-MM-DDTHH:MM-HH:MM format.")
+    end_time: str = Field(description="The end datetime of the event, which is in YYYY-MM-DDTHH:MM-HH:MM format.")
 
 
 def add_event(title: str, start_time: str, end_time: str, google_credentials) -> str:
@@ -340,3 +340,63 @@ def remove_task(task_list_name: str, task_name: str, google_credentials) -> str:
         
     return f'Could not find {task_name} under task list {task_list_name}'
 
+# ===================== DOCS ====================================
+
+class CreateDocumnetInput(BaseModel):
+    name: str = Field(description="The name of the new document.")
+
+def create_document(google_credentials, name: str) -> Dict:
+    try:
+        service = build("docs", "v1", credentials=google_credentials)
+        
+        new_doc = service.documents().create(body={"title": name}).execute()
+        
+        return new_doc
+    except HttpError as err:
+        return {"error": f"HTTP Error: {err}"}
+    except Exception as e:
+        return {"error": f"An error occurred: {e}"}
+    
+class InsertTextInput(BaseModel):
+    text: str = Field(description="The text to be inserted.")
+    document_name: str = Field(description="The name of the document.")
+
+def get_document_id(google_credentials, document_name: str) -> str:
+    SCOPES = ['https://www.googleapis.com/auth/drive']
+
+    service = build('drive', 'v3', credentials=google_credentials)
+
+    results = service.files().list(q=f"name='{document_name}' and mimeType='application/vnd.google-apps.document'",
+                                    fields="files(id)").execute()
+    items = results.get('files', [])
+
+    if items:
+        return items[0]['id']
+    else:
+        return None
+    
+def insert_text(google_credentials, text: str, document_name: str) -> Dict:
+    try:
+        document_id = get_document_id(google_credentials, document_name)
+
+        if document_id:
+            requests = [
+                {
+                    'insertText': {
+                        'location': {
+                            'index': 1,
+                        },
+                        'text': text
+                    }
+                }
+            ]
+
+            service = build("docs", "v1", credentials=google_credentials)
+            result = service.documents().batchUpdate(documentId=document_id, body={'requests': requests}).execute()
+            return result
+        else:
+            return {"error": f"Document '{document_name}' not found."}
+    except HttpError as err:
+        return {"error": f"HTTP Error: {err}"}
+    except Exception as e:
+        return {"error": f"An error occurred: {e}"}
