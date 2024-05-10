@@ -10,9 +10,8 @@ from .location import get_current_location
 from ecco6.tool import stops
 
 #================ TRAVEL PLANER ===================
-#current_dir = os.path.dirname(__file__)
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
+current_dir = os.path.dirname(__file__)
+#current_dir = os.path.dirname(os.path.abspath(__file__))
 stops_file = os.path.join(current_dir, "stops.txt")
 
 def get_station_coordinates(station_name):
@@ -53,22 +52,29 @@ def get_travel_suggestions(origin_station_name: str, destination_station_name: s
         found_lines = 0
         travel_suggestions = ""
 
-        for trip in data["Trip"]:
+        for trip in data.get("Trip", []):
             for leg in trip["LegList"]["Leg"]:
-                if "Product" in leg and leg["Product"]["catOut"] == "TRAIN" and "PENDELTÅG" in leg["Product"]["name"]:
-                    pendeltag_line_number = leg["Product"]["name"]
-                    travel_suggestions += f"Line Number (PENDELTÅG): {pendeltag_line_number}\n"
-                    travel_suggestions += "Train Information:\n"
-                    travel_suggestions += f"Departure: {leg['Origin']['name']}\n"
-                    travel_suggestions += f"Destination: {leg['Destination']['name']}\n"
-                    travel_suggestions += f"Departure Time: {leg['Origin']['time']}\n"
-                    travel_suggestions += f"Arrival Time: {leg['Destination']['time']}\n\n"
-                    found_lines += 1
+                if "Product" in leg:
+                    product = leg["Product"]
+                    if product["catOut"] == "TRAIN" and "PENDELTÅG" in product["name"]:
+                        travel_suggestions += f"Pendeltåg Line: {product['name']}\n"
+                        travel_suggestions += f"Departure: {leg['Origin']['name']}\n"
+                        travel_suggestions += f"Destination: {leg['Destination']['name']}\n"
+                        travel_suggestions += f"Departure Time: {leg['Origin']['time']}\n"
+                        travel_suggestions += f"Arrival Time: {leg['Destination']['time']}\n\n"
+                        found_lines += 1
+                    elif product["catOut"] == "BUS":
+                        travel_suggestions += f"Bus Line: {product['name']}\n"
+                        travel_suggestions += f"Departure: {leg['Origin']['name']}\n"
+                        travel_suggestions += f"Destination: {leg['Destination']['name']}\n"
+                        travel_suggestions += f"Departure Time: {leg['Origin']['time']}\n"
+                        travel_suggestions += f"Arrival Time: {leg['Destination']['time']}\n\n"
+                        found_lines += 1
                     if found_lines == 2:
                         break
             if found_lines == 2:
                 break
-        return travel_suggestions
+        return travel_suggestions or "No travel suggestions found."
     else:
         return f"Error: {response.status_code}"
 
