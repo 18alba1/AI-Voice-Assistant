@@ -169,7 +169,7 @@ class Ecco6Agent:
     tools.append(get_news_tool)
 
     get_weather_tool = StructuredTool.from_function(
-        func=lambda city_name: weather.get_weather(weather.WeatherInput(city_name=city_name)),
+        func=lambda city_name,date=None: weather.get_weather(weather.WeatherInput(city_name=city_name,date=date)),
         name="get_weather",
         description="Get the current weather for a specified city.",
         args_schema=weather.WeatherInput,
