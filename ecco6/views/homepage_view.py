@@ -230,7 +230,7 @@ def record_audio_until_silence():
     with microphone as source:
         recognizer.adjust_for_ambient_noise(source)
         print("Listening...")
-        audio = recognizer.listen(source, timeout=2)
+        audio = recognizer.listen(source, timeout=6)
         print("Stopped listening.")
         stop_sound.play()
         return audio

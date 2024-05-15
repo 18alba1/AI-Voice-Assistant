@@ -1,7 +1,7 @@
 import base64
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from email.message import EmailMessage
 from typing import Dict, List
 from googleapiclient.errors import HttpError
@@ -51,15 +51,14 @@ def get_events_by_date(date: str, google_credentials) -> str:
 
 class AddEventInput(BaseModel):
     title: str = Field(description="The title of the event.")
-    start_time: str = Field(description="The start datetime of the event, which is in YYYY-MM-DDTHH:MM-HH:MM format.")
-    end_time: str = Field(description="The end datetime of the event, which is in YYYY-MM-DDTHH:MM-HH:MM format.")
-
+    start_time: str = Field(description="The start datetime of the event, in the format of YYYY-MM-DDTHH:MM:SS.")
+    end_time: str = Field(description="The end datetime of the event, in the format of YYYY-MM-DDTHH:MM:SS.")
 
 def add_event(title: str, start_time: str, end_time: str, google_credentials) -> str:
     service = build("calendar", "v3", credentials=google_credentials)
-    
+
     timezone = str(get_localzone())
-    
+
     event = {
         'summary': title,
         'start': {
