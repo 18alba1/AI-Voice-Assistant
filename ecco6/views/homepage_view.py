@@ -1,10 +1,8 @@
 import logging
 from typing import Tuple
 import speech_recognition as sr
-import pygame
 import os
 import base64
-from pathlib import Path
 
 import streamlit as st
 from google.auth.transport.requests import Request
@@ -193,13 +191,8 @@ sound_file_hello = "connected.mp3"
 sound_file_stop = "stop.mp3"
 sound_file_path_hello = os.path.join(current_dir, sound_file_hello)
 sound_file_path_stop = os.path.join(current_dir, sound_file_stop)
-print(sound_file_path_hello)
-print(sound_file_path_stop)
-print(Path(sound_file_path_hello).exists())
-print(Path(sound_file_path_stop).exists())
-pygame.mixer.init()
-pygame.mixer.music.load(sound_file_path_hello)
-stop_sound = pygame.mixer.Sound(sound_file_path_stop)
+hello_file_bytes = open(sound_file_path_hello, "rb").read()
+stop_file_bytes = open(sound_file_path_stop, "rb").read()
 
 # Function to listen for the wake word "Hello"
 def listen_for_wake_word():
@@ -214,7 +207,7 @@ def listen_for_wake_word():
                 wake_word = recognizer.recognize_google(audio)
                 if wake_word.lower() == "hello":
                     print("Wake word 'Hello' detected!")
-                    pygame.mixer.music.play()
+                    st.audio(hello_file_bytes, format="audio/mpeg")
                     return True
             except sr.WaitTimeoutError:
               pass
@@ -230,5 +223,5 @@ def record_audio_until_silence():
         print("Listening...")
         audio = recognizer.listen(source, timeout=6)
         print("Stopped listening.")
-        stop_sound.play()
+        st.audio(stop_file_bytes, format="audio/mpeg")
         return audio
