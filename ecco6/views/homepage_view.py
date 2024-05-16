@@ -176,15 +176,7 @@ def homepage_view():
                     logging.info(f"trying to play {answer}.")
                     audio_response = openai_client.text_to_speech(answer)
                     util.append_message("assistant", answer, audio_response)
-                    audio_base64 = base64.b64encode(audio_response).decode()
-
-                    html_string = f"""
-                    <audio controls autoplay hidden>
-                        <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
-                    </audio>
-                    """
-
-                    st.markdown(html_string, unsafe_allow_html=True)
+                    util.autoplay_hidden_audio(audio_response)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sound_file_hello = "connected.mp3"
@@ -207,7 +199,7 @@ def listen_for_wake_word():
                 wake_word = recognizer.recognize_google(audio)
                 if wake_word.lower() == "hello":
                     print("Wake word 'Hello' detected!")
-                    st.audio(hello_file_bytes, format="audio/mpeg")
+                    util.autoplay_hidden_audio(hello_file_bytes)
                     return True
             except sr.WaitTimeoutError:
               pass
@@ -223,5 +215,5 @@ def record_audio_until_silence():
         print("Listening...")
         audio = recognizer.listen(source, timeout=6)
         print("Stopped listening.")
-        st.audio(stop_file_bytes, format="audio/mpeg")
+        util.autoplay_hidden_audio(stop_file_bytes)
         return audio

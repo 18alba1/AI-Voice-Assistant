@@ -63,3 +63,14 @@ def render_image(filepath: str):
     content_b64encoded = base64.b64encode(content_bytes).decode()
     image_string = f'data:image/{mime_type};base64,{content_b64encoded}'
   st.image(image_string)
+
+
+def autoplay_hidden_audio(audio: bytes):
+  audio_base64 = base64.b64encode(audio).decode()
+
+  html_string = f"""
+  <audio controls autoplay hidden>
+      <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
+  </audio>
+  """
+  st.markdown(html_string, unsafe_allow_html=True)
