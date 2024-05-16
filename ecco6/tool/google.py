@@ -51,8 +51,8 @@ def get_events_by_date(date: str, google_credentials) -> str:
 
 class AddEventInput(BaseModel):
     title: str = Field(description="The title of the event.")
-    start_time: str = Field(description="The start datetime of the event, which is in YYYY-MM-DDTHH:MM-HH:MM format.")
-    end_time: str = Field(description="The end datetime of the event, which is in YYYY-MM-DDTHH:MM-HH:MM format.")
+    start_time: str = Field(description="The start datetime of the event, which is in YYYY-MM-DDTHH:MM:SS format.")
+    end_time: str = Field(description="The end datetime of the event, which is in YYYY-MM-DDTHH:MM:SS format.")
 
 
 def add_event(title: str, start_time: str, end_time: str, google_credentials) -> str:
