@@ -199,6 +199,8 @@ sound_file_hello = "connected.mp3"
 sound_file_stop = "stop.mp3"
 sound_file_path_hello = os.path.join(current_dir, sound_file_hello)
 sound_file_path_stop = os.path.join(current_dir, sound_file_stop)
+print(sound_file_path_hello)
+print(sound_file_path_stop)
 pygame.mixer.init()
 pygame.mixer.music.load(sound_file_path_hello)
 stop_sound = pygame.mixer.Sound(sound_file_path_stop)
@@ -230,7 +232,7 @@ def record_audio_until_silence():
     with microphone as source:
         recognizer.adjust_for_ambient_noise(source)
         print("Listening...")
-        audio = recognizer.listen(source, timeout=2)
+        audio = recognizer.listen(source, timeout=6)
         print("Stopped listening.")
         stop_sound.play()
         return audio
