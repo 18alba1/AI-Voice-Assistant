@@ -4,7 +4,6 @@ import streamlit as st
 import time
 import datetime
 import pyttsx3
-import threading
 from typing import Optional
 
 class SetAlarmInput(BaseModel):
