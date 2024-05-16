@@ -189,23 +189,42 @@ stop_file_bytes = open(sound_file_path_stop, "rb").read()
 # Function to listen for the wake word "Hello"
 def listen_for_wake_word():
     recognizer = sr.Recognizer()
-    
-    with sr.Microphone(device_index=0) as source:
-        recognizer.adjust_for_ambient_noise(source)
-        print("Listening for wake word 'Hello'...")
-        while True:
-            try:
-                audio = recognizer.listen(source, timeout=1, phrase_time_limit=1)
-                wake_word = recognizer.recognize_google(audio)
-                if wake_word.lower() == "hello":
-                    print("Wake word 'Hello' detected!")
-                    util.autoplay_hidden_audio(hello_file_bytes)
-                    return True
-            except sr.WaitTimeoutError:
-              pass
-            except sr.UnknownValueError:
-              pass
+    mic1 = sr.Microphone(device_index=1)
+    mic2 = sr.Microphone(device_index=0)
 
+    if mic2:
+      with mic2 as source:
+          recognizer.adjust_for_ambient_noise(source)
+          print("Listening for wake word 'Hello'...")
+          while True:
+              try:
+                  audio = recognizer.listen(source, timeout=1, phrase_time_limit=1)
+                  wake_word = recognizer.recognize_google(audio)
+                  if wake_word.lower() == "hello":
+                      print("Wake word 'Hello' detected!")
+                      util.autoplay_hidden_audio(hello_file_bytes)
+                      return True
+              except sr.WaitTimeoutError:
+                pass
+              except sr.UnknownValueError:
+                pass
+    else:
+       with mic1 as source:
+          recognizer.adjust_for_ambient_noise(source)
+          print("Listening for wake word 'Hello'...")
+          while True:
+              try:
+                  audio = recognizer.listen(source, timeout=1, phrase_time_limit=1)
+                  wake_word = recognizer.recognize_google(audio)
+                  if wake_word.lower() == "hello":
+                      print("Wake word 'Hello' detected!")
+                      util.autoplay_hidden_audio(hello_file_bytes)
+                      return True
+              except sr.WaitTimeoutError:
+                pass
+              except sr.UnknownValueError:
+                pass
+              
 # Function to record audio until silence is detected
 def record_audio_until_silence():
     recognizer = sr.Recognizer()
