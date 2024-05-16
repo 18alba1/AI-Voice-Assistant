@@ -4,6 +4,7 @@ import speech_recognition as sr
 import pygame
 import os
 import base64
+from pathlib import Path
 
 import streamlit as st
 from google.auth.transport.requests import Request
@@ -16,14 +17,7 @@ from ecco6.agent import Ecco6Agent
 from ecco6.auth import firebase_auth
 from ecco6.client.OpenAIClient import OpenAIClient
 
-import firebase_admin
 from firebase_admin import db
-
-import time
-import datetime
-import pyttsx3
-import threading
-
 
 
 
@@ -201,6 +195,8 @@ sound_file_path_hello = os.path.join(current_dir, sound_file_hello)
 sound_file_path_stop = os.path.join(current_dir, sound_file_stop)
 print(sound_file_path_hello)
 print(sound_file_path_stop)
+print(Path(sound_file_path_hello).exists())
+print(Path(sound_file_path_stop).exists())
 pygame.mixer.init()
 pygame.mixer.music.load(sound_file_path_hello)
 stop_sound = pygame.mixer.Sound(sound_file_path_stop)
