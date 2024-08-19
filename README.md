@@ -17,3 +17,4 @@ To run the project:
 ```
 streamlit run ecco6/main.py
 ```
+[Short summary slides of project](https://docs.google.com/presentation/d/18jNUoHTWZpmJhCoKYF_A6fS6uobdqNm0cS9TB-FNHOw/edit?usp=sharing)
